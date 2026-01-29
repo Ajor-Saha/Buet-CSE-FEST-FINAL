@@ -9,6 +9,12 @@ import {
   Sparkles,
   X,
   FileDown,
+  CheckCircle2,
+  AlertTriangle,
+  Lightbulb,
+  ChevronDown,
+  ChevronUp,
+  ShieldCheck,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
@@ -24,10 +30,16 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
+import {
   apiGenerateEnhancedContent,
   apiGeneratePDF,
   type SourceMaterial,
 } from "@/lib/content-api"
+import { apiValidateText, type TextEvaluation } from "@/lib/validation-api"
 import { useAuth } from "@/components/auth/auth-provider"
 import { toast } from "sonner"
 
@@ -49,6 +61,34 @@ const generationTypeConfig: Record<
   },
 }
 
+function getScoreColor(score: number): string {
+  if (score >= 8) return "text-emerald-600"
+  if (score >= 6) return "text-yellow-600"
+  return "text-red-600"
+}
+
+function ScoreCircle({ score, label }: { score: number; label: string }) {
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <div
+        className={cn(
+          "relative h-14 w-14 rounded-full border-4 flex items-center justify-center",
+          score >= 8
+            ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950"
+            : score >= 6
+            ? "border-yellow-500 bg-yellow-50 dark:bg-yellow-950"
+            : "border-red-500 bg-red-50 dark:bg-red-950"
+        )}
+      >
+        <span className={cn("text-lg font-bold", getScoreColor(score))}>
+          {score.toFixed(1)}
+        </span>
+      </div>
+      <span className="text-xs text-muted-foreground text-center">{label}</span>
+    </div>
+  )
+}
+
 type GenerateMaterialsDialogProps = {
   trigger: React.ReactNode
   courseId: string
@@ -65,11 +105,16 @@ export function GenerateMaterialsDialog({
   const [generationType, setGenerationType] = React.useState<GenerationType>("enhanced")
   const [userPrompt, setUserPrompt] = React.useState("")
   const [isGenerating, setIsGenerating] = React.useState(false)
-  
+  const [isValidating, setIsValidating] = React.useState(false)
+
   // For enhanced content result
   const [generatedTitle, setGeneratedTitle] = React.useState<string | null>(null)
   const [generatedDescription, setGeneratedDescription] = React.useState<string | null>(null)
   const [sources, setSources] = React.useState<SourceMaterial[]>([])
+
+  // For validation result
+  const [validation, setValidation] = React.useState<TextEvaluation | null>(null)
+  const [showDetails, setShowDetails] = React.useState(false)
 
   const handleGenerate = async () => {
     if (!token) {
@@ -86,6 +131,7 @@ export function GenerateMaterialsDialog({
     setGeneratedTitle(null)
     setGeneratedDescription(null)
     setSources([])
+    setValidation(null)
 
     const config = generationTypeConfig[generationType]
 
@@ -93,7 +139,7 @@ export function GenerateMaterialsDialog({
       if (generationType === "pdf") {
         // Generate and download PDF
         toast.info("Generating PDF... This may take a moment.")
-        
+
         const res = await apiGeneratePDF(
           { course_id: courseId, user_prompt: userPrompt },
           token
@@ -129,10 +175,35 @@ export function GenerateMaterialsDialog({
           return
         }
 
-        setGeneratedTitle(res.data.data.title)
-        setGeneratedDescription(res.data.data.description)
+        const title = res.data.data.title
+        const description = res.data.data.description
+
+        setGeneratedTitle(title)
+        setGeneratedDescription(description)
         setSources(res.data.data.metadata.source_materials || [])
         toast.success(`${config.label} generated successfully!`)
+
+        // Automatically validate the generated content
+        setIsGenerating(false)
+        setIsValidating(true)
+        toast.info("Validating content quality...")
+
+        const validationRes = await apiValidateText(
+          {
+            content: `${title}\n\n${description}`,
+            context: `Generated for course: ${courseName || courseId}. User prompt: ${userPrompt}`,
+          },
+          token
+        )
+
+        if (validationRes.ok) {
+          setValidation(validationRes.data.data.evaluation)
+          toast.success("Content validated!")
+        } else {
+          toast.error("Validation failed, but content is ready")
+        }
+        setIsValidating(false)
+        return
       }
     } catch (error) {
       toast.error("An error occurred while generating materials")
@@ -146,7 +217,7 @@ export function GenerateMaterialsDialog({
 
     const filename = `${courseName || "course"}_content_${Date.now()}.md`
 
-    const content = `# ${generatedTitle}
+    let content = `# ${generatedTitle}
 
 **Course:** ${courseName || courseId}
 **Generated on:** ${new Date().toLocaleDateString()}
@@ -162,6 +233,28 @@ ${generatedDescription}
 
 ${sources.map((s, i) => `${i + 1}. ${s.material}${s.page ? ` (Page ${s.page})` : ""} - ${s.category || "N/A"}`).join("\n")}
 `
+
+    // Add validation info if available
+    if (validation) {
+      content += `
+---
+
+## Quality Validation
+
+- **Confidence Score:** ${validation.confidence_score}/10
+- **Accuracy Score:** ${validation.accuracy_score}/10
+- **Clarity Score:** ${validation.clarity_score}/10
+
+### Strengths
+${validation.strengths.map((s) => `- ${s}`).join("\n")}
+
+### Areas for Improvement
+${validation.weaknesses.map((w) => `- ${w}`).join("\n")}
+
+### Suggestions
+${validation.suggestions.map((s) => `- ${s}`).join("\n")}
+`
+    }
 
     const blob = new Blob([content], { type: "text/markdown" })
     const url = URL.createObjectURL(blob)
@@ -180,6 +273,8 @@ ${sources.map((s, i) => `${i + 1}. ${s.material}${s.page ? ` (Page ${s.page})` :
     setGeneratedTitle(null)
     setGeneratedDescription(null)
     setSources([])
+    setValidation(null)
+    setShowDetails(false)
   }
 
   const SelectedIcon = generationTypeConfig[generationType].icon
@@ -212,13 +307,13 @@ ${sources.map((s, i) => `${i + 1}. ${s.material}${s.page ? ` (Page ${s.page})` :
                     setGenerationType(type)
                     handleReset()
                   }}
-                  disabled={isGenerating}
+                  disabled={isGenerating || isValidating}
                   className={cn(
                     "flex flex-col items-start gap-2 p-4 rounded-lg border-2 transition-all text-left",
                     generationType === type
                       ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-950"
                       : "border-border hover:border-indigo-300",
-                    isGenerating && "opacity-50 cursor-not-allowed"
+                    (isGenerating || isValidating) && "opacity-50 cursor-not-allowed"
                   )}
                 >
                   <div className="flex items-center gap-2">
@@ -237,9 +332,7 @@ ${sources.map((s, i) => `${i + 1}. ${s.material}${s.page ? ` (Page ${s.page})` :
                       {config.label}
                     </span>
                   </div>
-                  <span className="text-xs text-muted-foreground">
-                    {config.description}
-                  </span>
+                  <span className="text-xs text-muted-foreground">{config.description}</span>
                 </button>
               )
             })}
@@ -253,11 +346,12 @@ ${sources.map((s, i) => `${i + 1}. ${s.material}${s.page ? ` (Page ${s.page})` :
               placeholder="e.g., Explain database indexing and B-trees with examples"
               value={userPrompt}
               onChange={(e) => setUserPrompt(e.target.value)}
-              disabled={isGenerating}
+              disabled={isGenerating || isValidating}
               className="h-12"
             />
             <p className="text-xs text-muted-foreground">
-              Be specific about the topic. The AI will search your course materials and generate comprehensive content.
+              Be specific about the topic. The AI will search your course materials and generate
+              comprehensive content.
             </p>
           </div>
 
@@ -265,7 +359,7 @@ ${sources.map((s, i) => `${i + 1}. ${s.material}${s.page ? ` (Page ${s.page})` :
           {!generatedTitle && (
             <Button
               onClick={handleGenerate}
-              disabled={isGenerating || !userPrompt.trim()}
+              disabled={isGenerating || isValidating || !userPrompt.trim()}
               className="w-full gap-2 h-11"
             >
               {isGenerating ? (
@@ -300,17 +394,150 @@ ${sources.map((s, i) => `${i + 1}. ${s.material}${s.page ? ` (Page ${s.page})` :
                   </Button>
                   <Button size="sm" onClick={handleDownloadMarkdown} className="gap-1">
                     <Download className="h-4 w-4" />
-                    Download MD
+                    Download
                   </Button>
                 </div>
               </div>
+
+              {/* Validation Results */}
+              {isValidating && (
+                <div className="rounded-lg border bg-muted/30 p-4 flex items-center gap-3">
+                  <Loader2 className="h-5 w-5 animate-spin text-indigo-600" />
+                  <div>
+                    <p className="font-medium text-sm">Validating Content Quality...</p>
+                    <p className="text-xs text-muted-foreground">
+                      AI is evaluating accuracy, clarity, and completeness
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {validation && (
+                <div className="rounded-lg border bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4 space-y-4">
+                  {/* Header */}
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="h-5 w-5 text-indigo-600" />
+                    <span className="font-semibold">Quality Validation</span>
+                  </div>
+
+                  {/* Score Circles */}
+                  <div className="flex justify-around">
+                    <ScoreCircle score={validation.confidence_score} label="Confidence" />
+                    <ScoreCircle score={validation.accuracy_score} label="Accuracy" />
+                    <ScoreCircle score={validation.clarity_score} label="Clarity" />
+                  </div>
+
+                  {/* Overall Quality Badge */}
+                  <div className="flex items-center justify-center">
+                    <div
+                      className={cn(
+                        "px-4 py-2 rounded-full text-sm font-medium",
+                        validation.confidence_score >= 8
+                          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300"
+                          : validation.confidence_score >= 6
+                          ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300"
+                          : "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
+                      )}
+                    >
+                      {validation.confidence_score >= 8
+                        ? "✓ Excellent Quality"
+                        : validation.confidence_score >= 6
+                        ? "◐ Good Quality"
+                        : "⚠ Needs Improvement"}
+                    </div>
+                  </div>
+
+                  {/* Expandable Details */}
+                  <Collapsible open={showDetails} onOpenChange={setShowDetails}>
+                    <CollapsibleTrigger asChild>
+                      <Button variant="ghost" size="sm" className="w-full gap-1">
+                        {showDetails ? (
+                          <>
+                            <ChevronUp className="h-4 w-4" />
+                            Hide Details
+                          </>
+                        ) : (
+                          <>
+                            <ChevronDown className="h-4 w-4" />
+                            Show Details
+                          </>
+                        )}
+                      </Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="space-y-3 pt-2">
+                      {/* Explanation */}
+                      <div className="text-sm text-muted-foreground bg-white dark:bg-slate-950 rounded p-3">
+                        {validation.explanation}
+                      </div>
+
+                      {/* Strengths */}
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-sm font-medium text-emerald-600">
+                          <CheckCircle2 className="h-4 w-4" />
+                          Strengths
+                        </div>
+                        <ul className="space-y-1">
+                          {validation.strengths.map((s, i) => (
+                            <li
+                              key={i}
+                              className="text-xs text-muted-foreground flex items-start gap-2"
+                            >
+                              <span className="text-emerald-500 mt-1">•</span>
+                              {s}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      {/* Weaknesses */}
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-sm font-medium text-yellow-600">
+                          <AlertTriangle className="h-4 w-4" />
+                          Areas for Improvement
+                        </div>
+                        <ul className="space-y-1">
+                          {validation.weaknesses.map((w, i) => (
+                            <li
+                              key={i}
+                              className="text-xs text-muted-foreground flex items-start gap-2"
+                            >
+                              <span className="text-yellow-500 mt-1">•</span>
+                              {w}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      {/* Suggestions */}
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-sm font-medium text-blue-600">
+                          <Lightbulb className="h-4 w-4" />
+                          Suggestions
+                        </div>
+                        <ul className="space-y-1">
+                          {validation.suggestions.map((s, i) => (
+                            <li
+                              key={i}
+                              className="text-xs text-muted-foreground flex items-start gap-2"
+                            >
+                              <span className="text-blue-500 mt-1">•</span>
+                              {s}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+                </div>
+              )}
 
               {/* Sources */}
               {sources.length > 0 && (
                 <div className="flex flex-wrap gap-1">
                   {sources.slice(0, 5).map((source, i) => (
                     <Badge key={i} variant="outline" className="text-xs">
-                      {source.material}{source.page ? ` (p.${source.page})` : ""}
+                      {source.material}
+                      {source.page ? ` (p.${source.page})` : ""}
                     </Badge>
                   ))}
                   {sources.length > 5 && (
@@ -322,7 +549,7 @@ ${sources.map((s, i) => `${i + 1}. ${s.material}${s.page ? ` (Page ${s.page})` :
               )}
 
               {/* Content Preview */}
-              <div className="rounded-lg border bg-muted/30 p-4 max-h-[300px] overflow-y-auto space-y-3">
+              <div className="rounded-lg border bg-muted/30 p-4 max-h-[200px] overflow-y-auto space-y-3">
                 <h3 className="text-lg font-semibold">{generatedTitle}</h3>
                 <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap text-sm">
                   {generatedDescription}
@@ -334,7 +561,7 @@ ${sources.map((s, i) => `${i + 1}. ${s.material}${s.page ? ` (Page ${s.page})` :
                 <Button
                   variant="outline"
                   onClick={handleGenerate}
-                  disabled={isGenerating}
+                  disabled={isGenerating || isValidating}
                   className="flex-1 gap-2"
                 >
                   {isGenerating ? (
@@ -372,7 +599,7 @@ ${sources.map((s, i) => `${i + 1}. ${s.material}${s.page ? ` (Page ${s.page})` :
                     }
                     setIsGenerating(false)
                   }}
-                  disabled={isGenerating}
+                  disabled={isGenerating || isValidating}
                   className="gap-2"
                 >
                   <FileDown className="h-4 w-4" />
