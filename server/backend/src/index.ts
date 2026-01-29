@@ -7,6 +7,7 @@ import authRouter from './routes/auth-route';
 import coursesRouter from './routes/courses-route';
 import materialsRouter from './routes/materials-route';
 import pdfParserRouter from './routes/pdf-parser-route';
+import ragRouter from './routes/rag-route';
 
 
 dotenv.config();
@@ -30,6 +31,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/courses', coursesRouter);
 app.use('/api/materials', materialsRouter);
 app.use('/api/pdf-parser', pdfParserRouter);
+app.use('/api/rag', ragRouter);
 
 
 

@@ -231,11 +231,11 @@ export const parseFromUrl = asyncHandler(async (req: Request, res: Response) => 
       .values(
         chunks.map((chunk, index) => ({
           material_id: material_id,
-          chunk_index: index,
+          chunk_text: chunk.content, // Use chunk_text field from schema
+          chunk_order: index, // Use chunk_order field from schema
           chunk_type: chunk.chunk_type,
-          content: chunk.content,
           page_number: chunk.page_number,
-          metadata: chunk.metadata,
+          is_code: chunk.chunk_type === 'code',
         }))
       )
       .returning();
