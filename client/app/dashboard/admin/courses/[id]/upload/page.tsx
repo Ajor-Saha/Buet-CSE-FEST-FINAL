@@ -138,7 +138,7 @@ export default function UploadMaterialPage() {
     }
 
     const materialId = res.data.data?.material_id;
-    const fileUrl = res.data.data?.file_info?.file_url;
+    const fileUrl = res.data.data?.file_url;
 
     toast.success("Material uploaded. Starting parser...");
     setParsing(true);

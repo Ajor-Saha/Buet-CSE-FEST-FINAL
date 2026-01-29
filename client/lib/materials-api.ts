@@ -30,16 +30,18 @@ export type ApiResponse<T> = {
 
 export type UploadMaterialData = {
   material_id: string
-  file_info: {
-    original_filename?: string | null
-    file_url: string
-  }
-  parsing_info?: {
-    total_pages?: number
-    total_tables?: number
-    total_images?: number
-    total_chunks?: number
-  }
+  course_id: string
+  title: string
+  file_url: string
+  file_name?: string | null
+  file_size?: number | null
+  mime_type?: string | null
+  category: "theory" | "lab"
+  material_type: string
+  week_number?: number | null
+  topic?: string | null
+  tags?: string[] | null
+  uploaded_at?: string
 }
 
 export async function apiGetMaterials(params?: {
