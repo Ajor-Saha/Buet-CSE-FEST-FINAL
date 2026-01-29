@@ -25,26 +25,24 @@ Create a new user account.
   "email": "student@bracu.ac.bd",
   "password": "SecurePass123",
   "full_name": "John Doe",
-  "role": "student",
-  "department_id": "uuid-of-department"
+  "role": "student"
 }
 ```
+
+**Note:** `department_id` field is optional and can be added later via profile update.
 
 **Response:**
 ```json
 {
   "statusCode": 201,
   "data": {
-    "user": {
-      "user_id": "uuid",
-      "email": "student@bracu.ac.bd",
-      "full_name": "John Doe",
-      "role": "student",
-      "is_active": true
-    },
-    "accessToken": "jwt-token"
+    "user_id": "uuid",
+    "email": "student@bracu.ac.bd",
+    "full_name": "John Doe",
+    "role": "student",
+    "created_at": "2024-01-15T10:00:00Z"
   },
-  "message": "User created successfully",
+  "message": "User registered successfully",
   "success": true
 }
 ```
@@ -60,35 +58,35 @@ Authenticate a user and receive a JWT token.
 ```json
 {
   "email": "admin@bracu.ac.bd",
-  "password": "AdminPass123"
+  "password": "Admin123!"
 }
 ```
 
 **Response:**
 ```json
 {
-  "statusCode": 200,
+  "success": true,
   "data": {
-    "user": {
-      "user_id": "uuid",
-      "email": "admin@bracu.ac.bd",
-      "full_name": "Admin User",
-      "role": "admin",
-      "is_active": true
-    },
-    "accessToken": "jwt-token"
+    "user_id": "uuid",
+    "email": "admin@bracu.ac.bd",
+    "full_name": "Admin User",
+    "role": "admin",
+    "avatar_url": null,
+    "created_at": "2024-01-15T10:00:00Z"
   },
-  "message": "User logged in successfully",
-  "success": true
+  "accessToken": "jwt-token",
+  "message": "Login successful"
 }
 ```
+
+**Note:** Token is also set as an httpOnly cookie named `accessToken`
 
 ---
 
 ### 3. Sign Out
 **POST** `/auth/signout`
 
-Sign out the current user (clears token).
+Sign out the current user (clears token cookie).
 
 **Headers:**
 ```
@@ -99,11 +97,157 @@ Authorization: Bearer <token>
 ```json
 {
   "statusCode": 200,
-  "data": null,
-  "message": "User logged out successfully",
+  "data": {},
+  "message": "Logout successful",
   "success": true
 }
 ```
+
+---
+
+### 4. Update Profile Picture
+**PUT** `/auth/update-profile-picture`
+
+Update user's profile picture (requires authentication).
+
+**Headers:**
+```
+Authorization: Bearer <token>
+Content-Type: multipart/form-data
+```
+
+**Form Data:**
+- `avatar`: Image file (JPEG, PNG, etc.)
+
+**Response:**
+```json
+{
+  "statusCode": 200,
+  "data": {
+    "user_id": "uuid",
+    "avatar_url": "https://r2-bucket-url/avatars/filename.jpg"
+  },
+  "message": "Profile picture updated successfully",
+  "success": true
+}
+```
+
+---
+
+### 5. Change Password
+**PUT** `/auth/change-password`
+
+Change user's password (requires authentication).
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Request Body:**
+```json
+{
+  "oldPassword": "OldPass123!",
+  "newPassword": "NewPass123!"
+}
+```
+
+**Response:**
+```json
+{
+  "statusCode": 200,
+  "data": {},
+  "message": "Password changed successfully",
+  "success": true
+}
+```
+
+---
+
+### 6. Update Profile
+**PUT** `/auth/update-profile`
+
+Update user profile information (requires authentication).
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Request Body:**
+```json
+{
+  "full_name": "John Smith",
+  "department_id": "uuid-of-department"
+}
+```
+
+**Response:**
+```json
+{
+  "statusCode": 200,
+  "data": {
+    "user_id": "uuid",
+    "email": "user@bracu.ac.bd",
+    "full_name": "John Smith",
+    "department_id": "uuid"
+  },
+  "message": "Profile updated successfully",
+  "success": true
+}
+```
+
+---
+
+## AI Bot Endpoints
+
+### 1. Generate Text from Image (Gemini AI)
+**POST** `/ai/generate-from-image`
+
+Upload an image and generate text description or analysis using Google Gemini AI.
+
+**Headers:**
+```
+Content-Type: multipart/form-data
+```
+
+**Form Data:**
+- `image`: Image file to analyze (required)
+- `prompt` (optional): Custom prompt for the AI (default: "Caption this image.")
+
+**Example using cURL:**
+```bash
+curl -X POST http://localhost:8000/api/ai/generate-from-image \
+  -F "image=@photo.jpg" \
+  -F "prompt=Describe this image in detail"
+```
+
+**Response:**
+```json
+{
+  "statusCode": 200,
+  "data": {
+    "generatedText": "This image shows a beautiful sunset over the ocean...",
+    "prompt": "Describe this image in detail",
+    "imageInfo": {
+      "originalFilename": "photo.jpg",
+      "mimeType": "image/jpeg",
+      "size": 245678
+    }
+  },
+  "message": "Text generated successfully from image",
+  "success": true
+}
+```
+
+**Supported Image Formats:**
+- JPEG (.jpg, .jpeg)
+- PNG (.png)
+- GIF (.gif)
+- WebP (.webp)
+- BMP (.bmp)
+
+**Note:** Uses Google Gemini 2.0 Flash model for fast and accurate image analysis.
 
 ---
 
@@ -122,14 +266,24 @@ Authorization: Bearer <admin-token>
 **Request Body:**
 ```json
 {
-  "course_code": "CSE220",
-  "course_name": "Data Structures",
+  "code": "CSE220",
+  "name": "Data Structures",
   "department_id": "uuid-of-department",
-  "semester": "Fall",
+  "semester": "3/1",
   "year": 2024,
-  "description": "Introduction to data structures and algorithms"
+  "description": "Introduction to data structures and algorithms",
+  "has_theory": true,
+  "has_lab": false,
+  "total_weeks": 16
 }
 ```
+
+**Note:** 
+- `semester` format is "year/semester" (e.g., "1/1", "1/2", "2/1", "2/2", "3/1", "3/2", "4/1", "4/2")
+- `has_theory` defaults to true if not provided
+- `has_lab` defaults to false if not provided
+- `total_weeks` defaults to 16 if not provided
+- Course must have at least theory OR lab (cannot be both false)
 
 **Response:**
 ```json
@@ -137,12 +291,16 @@ Authorization: Bearer <admin-token>
   "statusCode": 201,
   "data": {
     "course_id": "uuid",
-    "course_code": "CSE220",
-    "course_name": "Data Structures",
+    "code": "CSE220",
+    "name": "Data Structures",
     "department_id": "uuid",
-    "semester": "Fall",
+    "semester": "3/1",
     "year": 2024,
     "description": "Introduction to data structures and algorithms",
+    "has_theory": true,
+    "has_lab": false,
+    "total_weeks": 16,
+    "is_active": true,
     "created_at": "2024-01-15T10:00:00Z"
   },
   "message": "Course created successfully",
@@ -159,12 +317,12 @@ Retrieve all courses with optional filters.
 
 **Query Parameters:**
 - `department_id` (optional): Filter by department
-- `semester` (optional): Filter by semester (e.g., "Fall", "Spring", "Summer")
+- `semester` (optional): Filter by semester (e.g., "1/1", "1/2", "2/1", "2/2", "3/1", "3/2", "4/1", "4/2")
 - `year` (optional): Filter by year (e.g., 2024)
 
 **Example:**
 ```
-GET /courses?department_id=uuid&semester=Fall&year=2024
+GET /courses?department_id=uuid&semester=3/1&year=2024
 ```
 
 **Response:**
@@ -174,16 +332,16 @@ GET /courses?department_id=uuid&semester=Fall&year=2024
   "data": [
     {
       "course_id": "uuid",
-      "course_code": "CSE220",
-      "course_name": "Data Structures",
-      "department": {
-        "department_id": "uuid",
-        "department_name": "Computer Science",
-        "department_code": "CSE"
-      },
-      "semester": "Fall",
+      "code": "CSE220",
+      "name": "Data Structures",
+      "description": "Introduction to data structures",
+      "department_id": "uuid",
+      "department_name": "Computer Science",
+      "department_code": "CSE",
+      "semester": "3/1",
       "year": 2024,
-      "description": "Introduction to data structures"
+      "is_active": true,
+      "created_at": "2024-01-15T10:00:00Z"
     }
   ],
   "message": "Courses retrieved successfully",
@@ -204,16 +362,15 @@ Get detailed information about a specific course.
   "statusCode": 200,
   "data": {
     "course_id": "uuid",
-    "course_code": "CSE220",
-    "course_name": "Data Structures",
-    "department": {
-      "department_id": "uuid",
-      "department_name": "Computer Science",
-      "department_code": "CSE"
-    },
-    "semester": "Fall",
-    "year": 2024,
+    "code": "CSE220",
+    "name": "Data Structures",
     "description": "Introduction to data structures",
+    "department_id": "uuid",
+    "department_name": "Computer Science",
+    "department_code": "CSE",
+    "semester": "3/1",
+    "year": 2024,
+    "is_active": true,
     "created_at": "2024-01-15T10:00:00Z"
   },
   "message": "Course retrieved successfully",
@@ -236,10 +393,18 @@ Authorization: Bearer <admin-token>
 **Request Body:**
 ```json
 {
-  "course_name": "Advanced Data Structures",
-  "description": "Updated description"
+  "name": "Advanced Data Structures",
+  "description": "Updated description",
+  "semester": "3/2",
+  "year": 2024,
+  "has_theory": true,
+  "has_lab": true,
+  "total_weeks": 16,
+  "is_active": true
 }
 ```
+
+**Note:** All fields are optional. Only provide fields you want to update.
 
 **Response:**
 ```json
@@ -302,17 +467,13 @@ Authorization: Bearer <token>
     {
       "enrollment_id": "uuid",
       "enrolled_at": "2024-01-15T10:00:00Z",
-      "course": {
-        "course_id": "uuid",
-        "course_code": "CSE220",
-        "course_name": "Data Structures",
-        "semester": "Fall",
-        "year": 2024,
-        "department": {
-          "department_name": "Computer Science",
-          "department_code": "CSE"
-        }
-      }
+      "course_id": "uuid",
+      "code": "CSE220",
+      "name": "Data Structures",
+      "description": "Introduction to data structures",
+      "semester": "3/1",
+      "year": 2024,
+      "department_name": "Computer Science"
     }
   ],
   "message": "Enrolled courses retrieved successfully",
@@ -336,15 +497,15 @@ Content-Type: multipart/form-data
 ```
 
 **Form Data:**
-- `file`: The material file to upload
-- `course_id`: UUID of the course
-- `material_type`: Type of material ("slides", "pdf", "code", "notes", "video", "other")
-- `category`: Category ("theory" or "lab")
-- `title`: Title of the material
+- `file`: The material file to upload (required)
+- `course_id`: UUID of the course (required)
+- `material_type`: Type of material - "slides", "pdf", "code", "notes", "video", "other" (required)
+- `category`: Category - "theory" or "lab" (required)
+- `title`: Title of the material (required)
 - `description` (optional): Description
 - `topic` (optional): Topic name
-- `week_number` (optional): Week number
-- `tags` (optional): Comma-separated tags (e.g., "algorithms,sorting,arrays")
+- `week_number` (optional): Week number (1-52)
+- `tags` (optional): JSON array of tags (e.g., ["algorithms", "sorting", "arrays"])
 
 **Example using cURL:**
 ```bash
@@ -375,9 +536,12 @@ curl -X POST http://localhost:8000/api/materials/upload \
     "file_url": "https://r2-bucket-url/materials/filename.pdf",
     "file_name": "lecture-slides.pdf",
     "file_size": 2048576,
+    "mime_type": "application/pdf",
     "topic": "Introduction",
     "week_number": 1,
     "tags": ["introduction", "data-structures", "basics"],
+    "view_count": 0,
+    "download_count": 0,
     "uploaded_at": "2024-01-15T10:00:00Z"
   },
   "message": "Material uploaded successfully",
@@ -412,32 +576,28 @@ GET /materials?course_id=uuid&category=theory&week_number=1&search=introduction&
 ```json
 {
   "statusCode": 200,
-  "data": {
-    "materials": [
-      {
-        "material_id": "uuid",
-        "course_id": "uuid",
-        "course": {
-          "course_code": "CSE220",
-          "course_name": "Data Structures"
-        },
-        "material_type": "slides",
-        "category": "theory",
-        "title": "Introduction to Data Structures",
-        "description": "Lecture 1 slides",
-        "file_url": "https://r2-bucket-url/materials/filename.pdf",
-        "file_name": "lecture-slides.pdf",
-        "file_size": 2048576,
-        "topic": "Introduction",
-        "week_number": 1,
-        "tags": ["introduction", "data-structures", "basics"],
-        "view_count": 42,
-        "download_count": 15,
-        "uploaded_at": "2024-01-15T10:00:00Z"
-      }
-    ],
-    "total": 1
-  },
+  "data": [
+    {
+      "material_id": "uuid",
+      "course_id": "uuid",
+      "course_name": "Data Structures",
+      "course_code": "CSE220",
+      "title": "Introduction to Data Structures",
+      "description": "Lecture 1 slides",
+      "category": "theory",
+      "material_type": "slides",
+      "file_url": "https://r2-bucket-url/materials/filename.pdf",
+      "file_name": "lecture-slides.pdf",
+      "file_size": 2048576,
+      "mime_type": "application/pdf",
+      "week_number": 1,
+      "topic": "Introduction",
+      "tags": ["introduction", "data-structures", "basics"],
+      "view_count": 42,
+      "download_count": 15,
+      "uploaded_at": "2024-01-15T10:00:00Z"
+    }
+  ],
   "message": "Materials retrieved successfully",
   "success": true
 }
@@ -456,11 +616,9 @@ Get detailed information about a specific material. Automatically increments vie
   "statusCode": 200,
   "data": {
     "material_id": "uuid",
-    "course": {
-      "course_id": "uuid",
-      "course_code": "CSE220",
-      "course_name": "Data Structures"
-    },
+    "course_id": "uuid",
+    "course_name": "Data Structures",
+    "course_code": "CSE220",
     "material_type": "slides",
     "category": "theory",
     "title": "Introduction to Data Structures",
@@ -468,6 +626,7 @@ Get detailed information about a specific material. Automatically increments vie
     "file_url": "https://r2-bucket-url/materials/filename.pdf",
     "file_name": "lecture-slides.pdf",
     "file_size": 2048576,
+    "mime_type": "application/pdf",
     "topic": "Introduction",
     "week_number": 1,
     "tags": ["introduction", "data-structures", "basics"],
@@ -533,7 +692,7 @@ Authorization: Bearer <admin-token>
 ```json
 {
   "statusCode": 200,
-  "data": null,
+  "data": {},
   "message": "Material deleted successfully",
   "success": true
 }
@@ -564,14 +723,18 @@ GET /materials/browse/theory?course_id=uuid
   "data": [
     {
       "material_id": "uuid",
+      "course_id": "uuid",
+      "course_name": "Data Structures",
+      "course_code": "CSE220",
       "title": "Introduction to Data Structures",
-      "material_type": "slides",
+      "description": "Lecture 1 slides",
       "category": "theory",
-      "topic": "Introduction",
+      "material_type": "slides",
       "week_number": 1,
-      "file_url": "https://r2-bucket-url/materials/filename.pdf",
+      "topic": "Introduction",
+      "tags": ["introduction", "data-structures"],
       "view_count": 43,
-      "download_count": 15
+      "uploaded_at": "2024-01-15T10:00:00Z"
     }
   ],
   "message": "Materials retrieved successfully",
@@ -601,31 +764,27 @@ GET /materials/week/1?course_id=uuid
 ```json
 {
   "statusCode": 200,
-  "data": {
-    "week_number": 1,
-    "materials": {
-      "theory": [
-        {
-          "material_id": "uuid",
-          "title": "Introduction Lecture",
-          "material_type": "slides",
-          "topic": "Introduction"
-        }
-      ],
-      "lab": [
-        {
-          "material_id": "uuid",
-          "title": "Lab 1: Setup",
-          "material_type": "code",
-          "topic": "Environment Setup"
-        }
-      ]
+  "data": [
+    {
+      "material_id": "uuid",
+      "course_id": "uuid",
+      "course_name": "Data Structures",
+      "title": "Introduction Lecture",
+      "description": "Week 1 theory content",
+      "category": "theory",
+      "material_type": "slides",
+      "topic": "Introduction",
+      "tags": ["introduction"],
+      "file_url": "https://r2-bucket-url/materials/file.pdf",
+      "uploaded_at": "2024-01-15T10:00:00Z"
     }
-  },
+  ],
   "message": "Materials for week 1 retrieved successfully",
   "success": true
 }
 ```
+
+**Note:** Results are ordered by category (theory first, then lab) and upload date.
 
 ---
 
@@ -640,9 +799,10 @@ Track when a material is downloaded. Increments download count.
   "statusCode": 200,
   "data": {
     "material_id": "uuid",
-    "download_count": 16
+    "download_count": 16,
+    "file_url": "https://r2-bucket-url/materials/filename.pdf"
   },
-  "message": "Download tracked successfully",
+  "message": "Download tracked",
   "success": true
 }
 ```
@@ -661,6 +821,8 @@ All endpoints return errors in this format:
   "success": false
 }
 ```
+
+**Note:** Some error responses may return `data: {}` instead of `data: null`.
 
 ### Common Error Codes:
 - **400**: Bad Request - Invalid input
@@ -707,10 +869,14 @@ All endpoints return errors in this format:
 
 1. **File Upload Limits**: Maximum file size is 10MB (configured in upload middleware)
 2. **Authentication**: JWT tokens are valid for 7 days
-3. **Pagination**: Use `limit` and `offset` for paginating results
-4. **Tags**: Tags are case-insensitive and stored as an array
-5. **Search**: The search parameter performs case-insensitive partial matching on title and description
-6. **View/Download Tracking**: View count increments on GET by ID, download count increments on download endpoint
+3. **Token Storage**: Tokens are stored as httpOnly cookies AND returned in response body
+4. **Pagination**: Use `limit` and `offset` for paginating results (not implemented for all endpoints)
+5. **Tags**: Tags are stored as JSON arrays, not comma-separated strings
+6. **Search**: The search parameter performs case-insensitive partial matching on title and description
+7. **View/Download Tracking**: View count increments on GET by ID, download count increments on download endpoint
+8. **Semester Format**: Use "year/semester" format (e.g., "1/1", "2/2", "3/1", "4/2")
+9. **Course Requirements**: Courses must have at least theory OR lab enabled (both cannot be false)
+10. **AI Image Analysis**: Uses Google Gemini 2.0 Flash model, requires GEMINI_API_KEY environment variable
 
 ---
 
@@ -736,8 +902,15 @@ curl -X POST http://localhost:8000/api/auth/signin \
   -c cookies.txt \
   -d '{
     "email": "admin@bracu.ac.bd",
-    "password": "AdminPass123"
+    "password": "Admin123!"
   }'
+```
+
+### Upload Profile Picture
+```bash
+curl -X PUT http://localhost:8000/api/auth/update-profile-picture \
+  -b cookies.txt \
+  -F "avatar=@profile.jpg"
 ```
 
 ### Create Course (with cookie auth)
@@ -749,7 +922,7 @@ curl -X POST http://localhost:8000/api/courses \
     "course_code": "CSE220",
     "course_name": "Data Structures",
     "department_id": "department-uuid",
-    "semester": "Fall",
+    "semester": "3/1",
     "year": 2024,
     "description": "Introduction to data structures"
   }'
