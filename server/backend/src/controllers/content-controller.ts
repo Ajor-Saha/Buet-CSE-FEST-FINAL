@@ -7,6 +7,7 @@ import PDFDocument from 'pdfkit';
 import { GoogleGenAI } from '@google/genai';
 import { asyncHandler } from '../utils/asyncHandler';
 import { ApiResponse } from '../utils/api-response';
+import axios from 'axios';
 
 // Initialize OpenAI
 const openai = new OpenAI({
@@ -76,6 +77,93 @@ const pdfContentSchema = {
   },
   required: ["title", "introduction", "main_content", "summary", "references"] as const
 };
+
+// JSON Schema for text content evaluation
+const textEvaluationSchema = {
+  type: "object" as const,
+  properties: {
+    confidence_score: {
+      type: "number" as const,
+      description: "Overall confidence score out of 10 (0-10)"
+    },
+    accuracy_score: {
+      type: "number" as const,
+      description: "Factual accuracy and correctness score out of 10"
+    },
+    clarity_score: {
+      type: "number" as const,
+      description: "Clarity and comprehensibility score out of 10"
+    },
+    explanation: {
+      type: "string" as const,
+      description: "Detailed explanation of the evaluation"
+    },
+    strengths: {
+      type: "array" as const,
+      items: {
+        type: "string" as const
+      },
+      description: "Positive aspects of the content"
+    },
+    weaknesses: {
+      type: "array" as const,
+      items: {
+        type: "string" as const
+      },
+      description: "Issues or areas for improvement"
+    },
+    suggestions: {
+      type: "array" as const,
+      items: {
+        type: "string" as const
+      },
+      description: "Specific suggestions to improve the content"
+    }
+  },
+  required: ["confidence_score", "accuracy_score", "clarity_score", "explanation", "strengths", "weaknesses", "suggestions"] as const
+};
+
+/**
+ * AI evaluation of text content
+ */
+async function evaluateTextWithAI(content: string, context?: string) {
+  const prompt = `You are an expert educational content reviewer. Evaluate the following educational content thoroughly.
+
+CONTENT:
+${content}
+
+${context ? `CONTEXT:\n${context}` : ''}
+
+EVALUATION CRITERIA:
+1. **Factual Accuracy** (correctness of information)
+2. **Clarity** (how well-explained and understandable)
+3. **Completeness** (coverage of the topic)
+4. **Educational Value** (usefulness for learning)
+5. **Structure** (organization and flow)
+6. **Examples** (quality and relevance of examples)
+
+Provide:
+1. **confidence_score** (0-10): Overall quality of the content
+2. **accuracy_score** (0-10): Factual correctness
+3. **clarity_score** (0-10): How clear and understandable
+4. **explanation**: Detailed evaluation (2-3 paragraphs)
+5. **strengths**: Array of positive aspects
+6. **weaknesses**: Array of issues or gaps
+7. **suggestions**: Array of specific improvements
+
+Be constructive and educational in your feedback.`;
+
+  const response = await ai.models.generateContent({
+    model: 'gemini-2.5-flash',
+    contents: prompt,
+    config: {
+      responseMimeType: "application/json",
+      responseJsonSchema: textEvaluationSchema,
+    },
+  });
+
+  return JSON.parse(response.text ?? '{}');
+}
 
 /**
  * API 1: Enhanced Content Generation with Online Research
@@ -275,7 +363,15 @@ Provide structured output with all required fields.`;
 
     const content = JSON.parse(response.text ?? '{}');
 
-    console.log('📄 Creating PDF document...');
+    console.log('� Validating generated content...');
+
+    // Validate the generated content
+    const fullContent = `${content.title}\n\n${content.introduction}\n\n${content.main_content}`;
+    const validationResult = await evaluateTextWithAI(fullContent, user_prompt);
+
+    console.log(`📊 Content Validation - Confidence: ${validationResult.confidence_score}/10, Accuracy: ${validationResult.accuracy_score}/10`);
+
+    console.log('�📄 Creating PDF document...');
 
     // Create PDF
     const doc = new PDFDocument({
@@ -380,7 +476,82 @@ Provide structured output with all required fields.`;
         doc.fontSize(10).font('Helvetica')
           .text(`[${idx + 1}] ${ref}`, { lineGap: 2 });
       });
+      doc.moveDown(2);
     }
+
+    // Add validation section
+    doc.addPage();
+    doc.fontSize(20).font('Helvetica-Bold').fillColor('#2563eb')
+      .text('Content Validation Report', { align: 'center' });
+    doc.moveDown(1);
+
+    // Add confidence scores box
+    doc.rect(50, doc.y, 495, 120).fillAndStroke('#f0f9ff', '#2563eb');
+    const scoreBoxY = doc.y + 15;
+    
+    doc.fillColor('#1e40af').fontSize(14).font('Helvetica-Bold')
+      .text('Quality Scores', 70, scoreBoxY);
+    doc.moveDown(0.5);
+    
+    doc.fillColor('#000000').fontSize(12).font('Helvetica')
+      .text(`Overall Confidence: ${validationResult.confidence_score}/10`, 70, doc.y, { continued: false });
+    doc.text(`Accuracy Score: ${validationResult.accuracy_score}/10`, 70, doc.y + 5);
+    doc.text(`Clarity Score: ${validationResult.clarity_score}/10`, 70, doc.y + 10);
+    
+    doc.y = scoreBoxY + 105;
+    doc.moveDown(1);
+
+    // Add explanation
+    doc.fontSize(14).font('Helvetica-Bold').fillColor('#000000')
+      .text('Evaluation Summary', { underline: true });
+    doc.moveDown(0.5);
+    doc.fontSize(10).font('Helvetica').fillColor('#333333')
+      .text(validationResult.explanation, {
+        align: 'justify',
+        lineGap: 4,
+      });
+    doc.moveDown(1);
+
+    // Add strengths
+    if (validationResult.strengths && validationResult.strengths.length > 0) {
+      doc.fontSize(12).font('Helvetica-Bold').fillColor('#059669')
+        .text('✓ Strengths', { underline: true });
+      doc.moveDown(0.5);
+      validationResult.strengths.forEach((strength: string) => {
+        doc.fontSize(10).font('Helvetica').fillColor('#333333')
+          .text(`• ${strength}`, { indent: 20, lineGap: 3 });
+      });
+      doc.moveDown(1);
+    }
+
+    // Add weaknesses
+    if (validationResult.weaknesses && validationResult.weaknesses.length > 0) {
+      doc.fontSize(12).font('Helvetica-Bold').fillColor('#dc2626')
+        .text('⚠ Areas for Improvement', { underline: true });
+      doc.moveDown(0.5);
+      validationResult.weaknesses.forEach((weakness: string) => {
+        doc.fontSize(10).font('Helvetica').fillColor('#333333')
+          .text(`• ${weakness}`, { indent: 20, lineGap: 3 });
+      });
+      doc.moveDown(1);
+    }
+
+    // Add suggestions
+    if (validationResult.suggestions && validationResult.suggestions.length > 0) {
+      doc.fontSize(12).font('Helvetica-Bold').fillColor('#2563eb')
+        .text('💡 Suggestions', { underline: true });
+      doc.moveDown(0.5);
+      validationResult.suggestions.forEach((suggestion: string) => {
+        doc.fontSize(10).font('Helvetica').fillColor('#333333')
+          .text(`• ${suggestion}`, { indent: 20, lineGap: 3 });
+      });
+    }
+
+    // Add validation metadata
+    doc.moveDown(2);
+    doc.fontSize(8).fillColor('#999999')
+      .text(`Validated on: ${new Date().toLocaleString()}`, { align: 'center' });
+    doc.text(`Validation Model: Gemini 2.5 Flash`, { align: 'center' });
 
     // Add footer
     doc.fontSize(8).fillColor('#999999')
