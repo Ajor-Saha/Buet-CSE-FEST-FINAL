@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "buet-cse-fest-2026",
 		"name": "Buet CSE FEST API",
-		"description": "Complete API collection for Buet CSE FEST application including authentication and AI bot endpoints",
+		"description": "Complete API collection for AI-Powered Learning Platform including authentication, courses, materials, and AI bot endpoints",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -21,7 +21,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"full_name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"securePassword123\",\n  \"role\": \"student\"\n}"
+							"raw": "{\n  \"full_name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"SecurePass123!\",\n  \"role\": \"student\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/auth/signup",
@@ -66,7 +66,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"securePassword123\"\n}"
+							"raw": "{\n  \"email\": \"admin@bracu.ac.bd\",\n  \"password\": \"Admin123!\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/auth/signin",
@@ -110,6 +110,36 @@
 							]
 						},
 						"description": "Logout the current user and clear the access token cookie. Requires authentication."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Current User",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/auth/me",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"me"
+							]
+						},
+						"description": "Get current authenticated user profile. Requires authentication."
 					},
 					"response": []
 				},
@@ -173,7 +203,7 @@
 								{
 									"key": "avatar",
 									"type": "file",
-									"src": "/path/to/your/image.jpg",
+									"src": [],
 									"description": "Profile picture image file"
 								}
 							]
@@ -245,7 +275,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"currentPassword\": \"securePassword123\",\n  \"newPassword\": \"newSecurePassword456\"\n}"
+							"raw": "{\n  \"currentPassword\": \"Admin123!\",\n  \"newPassword\": \"NewAdmin456!\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/auth/change-password",
@@ -290,7 +320,11 @@
 						],
 						"body": {
 							"mode": "raw",
+<<<<<<< HEAD
 							"raw": "{\n  \"code\": \"CSE101\",\n  \"name\": \"Introduction to Computer Science\",\n  \"description\": \"Fundamentals of computer science\",\n  \"department_id\": \"dept-id-here\",\n  \"semester\": \"Spring\",\n  \"year\": 2024,\n  \"has_theory\": true,\n  \"has_lab\": true,\n  \"total_weeks\": 16\n}"
+=======
+							"raw": "{\n  \"code\": \"CSE370\",\n  \"name\": \"Database Systems\",\n  \"description\": \"Introduction to database design and SQL\",\n  \"semester\": \"3/1\",\n  \"year\": 2025,\n  \"has_theory\": true,\n  \"has_lab\": true,\n  \"total_weeks\": 16\n}"
+>>>>>>> 6c9534a (feat:addpparser)
 						},
 						"url": {
 							"raw": "{{base_url}}/api/courses",
@@ -322,7 +356,11 @@
 						"method": "GET",
 						"header": [],
 						"url": {
+<<<<<<< HEAD
 							"raw": "{{base_url}}/api/courses?department_id=&semester=&year=",
+=======
+							"raw": "{{base_url}}/api/courses?semester=3/1&year=2025",
+>>>>>>> 6c9534a (feat:addpparser)
 							"host": [
 								"{{base_url}}"
 							],
@@ -332,6 +370,7 @@
 							],
 							"query": [
 								{
+<<<<<<< HEAD
 									"key": "department_id",
 									"value": "",
 									"description": "Filter by department ID"
@@ -349,11 +388,35 @@
 							]
 						},
 						"description": "Get all active courses with optional filters. Requires authentication."
+=======
+									"key": "semester",
+									"value": "3/1",
+									"description": "Filter by semester (e.g., 1/1, 2/2, 3/1)"
+								},
+								{
+									"key": "year",
+									"value": "2025",
+									"description": "Filter by year"
+								},
+								{
+									"key": "department_id",
+									"value": "",
+									"description": "Filter by department",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get all active courses with optional filters (semester, year, department). Requires authentication."
+>>>>>>> 6c9534a (feat:addpparser)
 					},
 					"response": []
 				},
 				{
+<<<<<<< HEAD
 					"name": "Get Course by ID",
+=======
+					"name": "Get Course By ID",
+>>>>>>> 6c9534a (feat:addpparser)
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -380,16 +443,28 @@
 							"variable": [
 								{
 									"key": "id",
+<<<<<<< HEAD
 									"value": "course-id-here"
 								}
 							]
 						},
 						"description": "Get details of a specific course by ID. Requires authentication."
+=======
+									"value": "c57c60dd-1b35-49b3-be05-196a4787811a"
+								}
+							]
+						},
+						"description": "Get course details by ID. Requires authentication."
+>>>>>>> 6c9534a (feat:addpparser)
 					},
 					"response": []
 				},
 				{
+<<<<<<< HEAD
 					"name": "Get My Enrolled Courses",
+=======
+					"name": "Update Course",
+>>>>>>> 6c9534a (feat:addpparser)
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -401,20 +476,49 @@
 								}
 							]
 						},
+<<<<<<< HEAD
 						"method": "GET",
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/courses/my-courses",
+=======
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Database Systems and Design\",\n  \"description\": \"Comprehensive introduction to database design, SQL, and NoSQL\",\n  \"total_weeks\": 15\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/courses/:id",
+>>>>>>> 6c9534a (feat:addpparser)
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
 								"courses",
+<<<<<<< HEAD
 								"my-courses"
 							]
 						},
 						"description": "Get all courses that the current user is enrolled in. Requires authentication."
+=======
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "c57c60dd-1b35-49b3-be05-196a4787811a"
+								}
+							]
+						},
+						"description": "Update course details (Admin only). Can update name, description, semester, year, is_active, has_theory, has_lab, total_weeks."
+>>>>>>> 6c9534a (feat:addpparser)
 					},
 					"response": []
 				},
@@ -447,7 +551,11 @@
 							"variable": [
 								{
 									"key": "id",
+<<<<<<< HEAD
 									"value": "course-id-here"
+=======
+									"value": "c57c60dd-1b35-49b3-be05-196a4787811a"
+>>>>>>> 6c9534a (feat:addpparser)
 								}
 							]
 						},
@@ -456,7 +564,11 @@
 					"response": []
 				},
 				{
+<<<<<<< HEAD
 					"name": "Update Course",
+=======
+					"name": "Get My Enrolled Courses",
+>>>>>>> 6c9534a (feat:addpparser)
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -468,6 +580,7 @@
 								}
 							]
 						},
+<<<<<<< HEAD
 						"method": "PUT",
 						"header": [
 							{
@@ -481,12 +594,19 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/api/courses/:id",
+=======
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/courses/my-courses",
+>>>>>>> 6c9534a (feat:addpparser)
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
 								"courses",
+<<<<<<< HEAD
 								":id"
 							],
 							"variable": [
@@ -497,11 +617,21 @@
 							]
 						},
 						"description": "Update course details (Admin only). Requires authentication."
+=======
+								"my-courses"
+							]
+						},
+						"description": "Get all courses the current user is enrolled in. Requires authentication."
+>>>>>>> 6c9534a (feat:addpparser)
 					},
 					"response": []
 				}
 			],
+<<<<<<< HEAD
 			"description": "Course management endpoints"
+=======
+			"description": "Course management endpoints for creating, viewing, and enrolling in courses"
+>>>>>>> 6c9534a (feat:addpparser)
 		},
 		{
 			"name": "Materials",
@@ -526,6 +656,7 @@
 							"formdata": [
 								{
 									"key": "course_id",
+<<<<<<< HEAD
 									"value": "course-id-here",
 									"type": "text"
 								},
@@ -538,21 +669,49 @@
 									"key": "description",
 									"value": "Introduction to the course",
 									"type": "text"
+=======
+									"value": "c57c60dd-1b35-49b3-be05-196a4787811a",
+									"type": "text",
+									"description": "Course ID (required)"
+								},
+								{
+									"key": "title",
+									"value": "Database Systems Week 1 Lecture",
+									"type": "text",
+									"description": "Material title (required)"
+								},
+								{
+									"key": "description",
+									"value": "Introduction to DBMS and SQL fundamentals",
+									"type": "text",
+									"description": "Material description (optional)"
+>>>>>>> 6c9534a (feat:addpparser)
 								},
 								{
 									"key": "category",
 									"value": "theory",
 									"type": "text",
+<<<<<<< HEAD
 									"description": "Either 'theory' or 'lab'"
 								},
 								{
 									"key": "content_type",
 									"value": "lecture",
 									"type": "text"
+=======
+									"description": "Category: 'theory' or 'lab' (required)"
+								},
+								{
+									"key": "content_type",
+									"value": "lecture_note",
+									"type": "text",
+									"description": "Content type: lecture_note, slide, assignment, code, etc. (required)"
+>>>>>>> 6c9534a (feat:addpparser)
 								},
 								{
 									"key": "week_number",
 									"value": "1",
+<<<<<<< HEAD
 									"type": "text"
 								},
 								{
@@ -564,11 +723,39 @@
 									"key": "tags",
 									"value": "[\"basics\", \"introduction\"]",
 									"type": "text"
+=======
+									"type": "text",
+									"description": "Week number (optional)"
+								},
+								{
+									"key": "topic",
+									"value": "Database Fundamentals",
+									"type": "text",
+									"description": "Topic (optional)"
+								},
+								{
+									"key": "tags",
+									"value": "[\"DBMS\", \"SQL\", \"Introduction\"]",
+									"type": "text",
+									"description": "Tags as JSON array (optional)"
+								},
+								{
+									"key": "programming_language",
+									"value": "sql",
+									"type": "text",
+									"description": "Programming language for code materials (optional)",
+									"disabled": true
+>>>>>>> 6c9534a (feat:addpparser)
 								},
 								{
 									"key": "file",
 									"type": "file",
+<<<<<<< HEAD
 									"src": "/path/to/material.pdf"
+=======
+									"src": [],
+									"description": "File to upload (PDF, MD, code, etc.) (required)"
+>>>>>>> 6c9534a (feat:addpparser)
 								}
 							]
 						},
@@ -583,7 +770,11 @@
 								"upload"
 							]
 						},
+<<<<<<< HEAD
 						"description": "Upload course material (Admin only). Supports file upload to R2 storage. Requires authentication."
+=======
+						"description": "Upload course material (Admin only). Supports up to 50MB files. File uploaded to R2 storage."
+>>>>>>> 6c9534a (feat:addpparser)
 					},
 					"response": []
 				},
@@ -603,7 +794,11 @@
 						"method": "GET",
 						"header": [],
 						"url": {
+<<<<<<< HEAD
 							"raw": "{{base_url}}/api/materials?course_id=&category=&week_number=&topic=&content_type=&search=",
+=======
+							"raw": "{{base_url}}/api/materials?course_id=c57c60dd-1b35-49b3-be05-196a4787811a&category=theory&week_number=1",
+>>>>>>> 6c9534a (feat:addpparser)
 							"host": [
 								"{{base_url}}"
 							],
@@ -614,33 +809,61 @@
 							"query": [
 								{
 									"key": "course_id",
+<<<<<<< HEAD
 									"value": "",
 									"description": "Filter by course ID"
 								},
 								{
 									"key": "category",
 									"value": "",
+=======
+									"value": "c57c60dd-1b35-49b3-be05-196a4787811a",
+									"description": "Filter by course"
+								},
+								{
+									"key": "category",
+									"value": "theory",
+>>>>>>> 6c9534a (feat:addpparser)
 									"description": "Filter by category (theory/lab)"
 								},
 								{
 									"key": "week_number",
+<<<<<<< HEAD
 									"value": "",
+=======
+									"value": "1",
+>>>>>>> 6c9534a (feat:addpparser)
 									"description": "Filter by week number"
 								},
 								{
 									"key": "topic",
 									"value": "",
+<<<<<<< HEAD
 									"description": "Filter by topic"
+=======
+									"description": "Filter by topic",
+									"disabled": true
+>>>>>>> 6c9534a (feat:addpparser)
 								},
 								{
 									"key": "content_type",
 									"value": "",
+<<<<<<< HEAD
 									"description": "Filter by content type"
+=======
+									"description": "Filter by content type",
+									"disabled": true
+>>>>>>> 6c9534a (feat:addpparser)
 								},
 								{
 									"key": "search",
 									"value": "",
+<<<<<<< HEAD
 									"description": "Search in title and description"
+=======
+									"description": "Search in title and description",
+									"disabled": true
+>>>>>>> 6c9534a (feat:addpparser)
 								}
 							]
 						},
@@ -649,7 +872,11 @@
 					"response": []
 				},
 				{
+<<<<<<< HEAD
 					"name": "Get Material by ID",
+=======
+					"name": "Get Material By ID",
+>>>>>>> 6c9534a (feat:addpparser)
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -676,6 +903,7 @@
 							"variable": [
 								{
 									"key": "id",
+<<<<<<< HEAD
 									"value": "material-id-here"
 								}
 							]
@@ -770,6 +998,13 @@
 							]
 						},
 						"description": "Get all materials for a specific week. Requires authentication."
+=======
+									"value": "80b510e4-fa14-44ce-af43-150d580d3354"
+								}
+							]
+						},
+						"description": "Get material details by ID. Automatically increments view count. Requires authentication."
+>>>>>>> 6c9534a (feat:addpparser)
 					},
 					"response": []
 				},
@@ -795,7 +1030,11 @@
 						],
 						"body": {
 							"mode": "raw",
+<<<<<<< HEAD
 							"raw": "{\n  \"title\": \"Updated Material Title\",\n  \"description\": \"Updated description\",\n  \"category\": \"theory\",\n  \"week_number\": 2,\n  \"topic\": \"Updated Topic\",\n  \"tags\": [\"tag1\", \"tag2\"],\n  \"programming_language\": \"python\",\n  \"is_public\": true\n}"
+=======
+							"raw": "{\n  \"title\": \"Updated Database Lecture\",\n  \"description\": \"Revised DBMS introduction\",\n  \"week_number\": 2,\n  \"tags\": [\"Database\", \"Updated\"]\n}"
+>>>>>>> 6c9534a (feat:addpparser)
 						},
 						"url": {
 							"raw": "{{base_url}}/api/materials/:id",
@@ -810,11 +1049,19 @@
 							"variable": [
 								{
 									"key": "id",
+<<<<<<< HEAD
 									"value": "material-id-here"
 								}
 							]
 						},
 						"description": "Update material metadata (Admin only). Requires authentication."
+=======
+									"value": "80b510e4-fa14-44ce-af43-150d580d3354"
+								}
+							]
+						},
+						"description": "Update material metadata (Admin only). Can update title, description, category, week_number, topic, tags, programming_language, is_public."
+>>>>>>> 6c9534a (feat:addpparser)
 					},
 					"response": []
 				},
@@ -846,16 +1093,117 @@
 							"variable": [
 								{
 									"key": "id",
+<<<<<<< HEAD
 									"value": "material-id-here"
 								}
 							]
 						},
 						"description": "Delete material and associated file from storage (Admin only). Requires authentication."
+=======
+									"value": "80b510e4-fa14-44ce-af43-150d580d3354"
+								}
+							]
+						},
+						"description": "Delete material and its file from R2 storage (Admin only)."
+>>>>>>> 6c9534a (feat:addpparser)
 					},
 					"response": []
 				},
 				{
+<<<<<<< HEAD
 					"name": "Track Material Download",
+=======
+					"name": "Browse Materials by Category",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/materials/browse/:category?course_id=c57c60dd-1b35-49b3-be05-196a4787811a",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"materials",
+								"browse",
+								":category"
+							],
+							"query": [
+								{
+									"key": "course_id",
+									"value": "c57c60dd-1b35-49b3-be05-196a4787811a",
+									"description": "Filter by course (optional)"
+								}
+							],
+							"variable": [
+								{
+									"key": "category",
+									"value": "theory",
+									"description": "Category: 'theory' or 'lab'"
+								}
+							]
+						},
+						"description": "Browse all materials by category (theory/lab). Optionally filter by course. Requires authentication."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Materials by Week",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/materials/week/:week_number?course_id=c57c60dd-1b35-49b3-be05-196a4787811a",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"materials",
+								"week",
+								":week_number"
+							],
+							"query": [
+								{
+									"key": "course_id",
+									"value": "c57c60dd-1b35-49b3-be05-196a4787811a",
+									"description": "Filter by course (optional)"
+								}
+							],
+							"variable": [
+								{
+									"key": "week_number",
+									"value": "1"
+								}
+							]
+						},
+						"description": "Get all materials for a specific week. Optionally filter by course. Materials ordered by category then upload date. Requires authentication."
+					},
+					"response": []
+				},
+				{
+					"name": "Track Download",
+>>>>>>> 6c9534a (feat:addpparser)
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -883,16 +1231,28 @@
 							"variable": [
 								{
 									"key": "id",
+<<<<<<< HEAD
 									"value": "material-id-here"
 								}
 							]
 						},
 						"description": "Increment download count for a material. Returns file URL. Requires authentication."
+=======
+									"value": "80b510e4-fa14-44ce-af43-150d580d3354"
+								}
+							]
+						},
+						"description": "Track material download. Increments download count and returns file URL. Requires authentication."
+>>>>>>> 6c9534a (feat:addpparser)
 					},
 					"response": []
 				}
 			],
+<<<<<<< HEAD
 			"description": "Course materials management endpoints"
+=======
+			"description": "Course materials management endpoints for uploading, browsing, and downloading learning resources"
+>>>>>>> 6c9534a (feat:addpparser)
 		},
 		{
 			"name": "AI Bot",
@@ -908,7 +1268,7 @@
 								{
 									"key": "files",
 									"type": "file",
-									"src": "/path/to/your/image.jpg",
+									"src": [],
 									"description": "Image file to analyze"
 								},
 								{
@@ -920,17 +1280,17 @@
 							]
 						},
 						"url": {
-							"raw": "{{base_url}}/api/ai/generate-from-image",
+							"raw": "{{base_url}}/api/aibot/generate-text-from-image",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
-								"ai",
-								"generate-from-image"
+								"aibot",
+								"generate-text-from-image"
 							]
 						},
-						"description": "Upload an image and generate text description using Google Gemini AI. Optionally provide a custom prompt for specific analysis."
+						"description": "Upload an image and generate text description using Google Gemini 2.0 Flash AI. Optionally provide a custom prompt for specific analysis."
 					},
 					"response": []
 				}

@@ -15,6 +15,7 @@ export * from "./materials";
 // Part 2: Intelligent Search Engine (RAG)
 export * from "./chunks";
 export * from "./search";
+export { materialChunksTable, chunkEmbeddingsTable } from "./chunks";
 
 // Part 3: AI-Generated Learning Materials
 export * from "./generated-content";

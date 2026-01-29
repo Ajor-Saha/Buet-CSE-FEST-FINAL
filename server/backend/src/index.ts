@@ -6,7 +6,7 @@ import dotenv from "dotenv";
 import authRouter from './routes/auth-route';
 import coursesRouter from './routes/courses-route';
 import materialsRouter from './routes/materials-route';
-import aibotRouter from './routes/aibot-route';
+import pdfParserRouter from './routes/pdf-parser-route';
 
 
 dotenv.config();
@@ -29,7 +29,7 @@ app.use(
 app.use('/api/auth', authRouter);
 app.use('/api/courses', coursesRouter);
 app.use('/api/materials', materialsRouter);
-app.use('/api/ai', aibotRouter);
+app.use('/api/pdf-parser', pdfParserRouter);
 
 
 
