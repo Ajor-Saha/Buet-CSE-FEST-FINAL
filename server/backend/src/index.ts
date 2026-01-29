@@ -1,0 +1,67 @@
+import express, { NextFunction, Request, Response } from "express";
+import cookieParser from "cookie-parser";
+import cors from "cors";
+import logger from "morgan";
+import dotenv from "dotenv";
+import contact_router from "./routes/contact-route";
+import aibot_router from "./routes/aibot-route";
+
+
+dotenv.config();
+
+const app = express();
+
+// Middleware to parse JSON request body
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(logger("dev"));
+app.use(
+  cors({
+    origin: ["http://localhost:3000", "http://localhost:3001",],
+    credentials: true,
+  })
+);
+
+// Mount routers
+app.use("/", contact_router); // Hackathon routes at root level
+app.use("/api/ai", aibot_router); // AI bot routes
+
+
+
+app.get("/", (req, res) => {
+  res.send("Buet Mock server is running");
+});
+
+
+
+// error handler
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  console.log("App error -> ", err);
+  res.status(500).json({
+    success: false,
+    message: "Internal Server Error",
+  });
+});
+
+// catch all the unknown routes
+app.use("*", (req: Request, res: Response) => {
+  res.status(404).json({
+    success: false,
+    message: "Route not found",
+  });
+});
+
+// Start the server
+const startServer = async () => {
+  try {
+    app.listen(process.env.PORT || 8000, () => {
+      console.log(`🚀 Server running on http://localhost:${process.env.PORT || 8000}`);
+    });
+  } catch (error) {
+    console.error("❌ Failed to start server:", error);
+    process.exit(1);
+  }
+};
+
+startServer();
