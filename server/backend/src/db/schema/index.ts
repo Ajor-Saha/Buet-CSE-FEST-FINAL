@@ -1,31 +1,26 @@
-// User Management
+// ============================================
+// MINIMAL HACKATHON SCHEMA - 5 Core Parts Only
+// ============================================
+
+// Core: User Management
 export * from "./users";
 export * from "./departments";
 
-// Course Management
+// Core: Course Management
 export * from "./courses";
 
-// Content Management
+// Part 1: Content Management (CMS)
 export * from "./materials";
 
-// RAG & Search
+// Part 2: Intelligent Search Engine (RAG)
 export * from "./chunks";
 export * from "./search";
 
-// AI Generation
+// Part 3: AI-Generated Learning Materials
 export * from "./generated-content";
 
-// Validation
+// Part 4: Content Validation & Evaluation
 export * from "./validation";
 
-// Chat
+// Part 5: Conversational Chat Interface
 export * from "./chat";
-
-// Community
-export * from "./community";
-
-// Bonus Features
-export * from "./bonus";
-
-// Analytics
-export * from "./analytics";

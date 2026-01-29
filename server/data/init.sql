@@ -54,6 +54,11 @@ CREATE TABLE courses (
     department_id UUID REFERENCES departments(department_id) ON DELETE SET NULL,
     semester VARCHAR(50),
     year INTEGER,
+    has_theory BOOLEAN DEFAULT TRUE,
+    has_lab BOOLEAN DEFAULT FALSE,
+    total_weeks INTEGER DEFAULT 16,
+    theory_credit_hours NUMERIC(3,1),
+    lab_credit_hours NUMERIC(3,1),
     created_by UUID REFERENCES users(user_id),
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -77,6 +82,20 @@ CREATE TABLE course_admins (
     role VARCHAR(20) CHECK (role IN ('instructor', 'ta')),
     assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(course_id, user_id)
+);
+
+-- Course weekly structure to organize theory and lab content
+CREATE TABLE course_structure (
+    structure_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    course_id UUID REFERENCES courses(course_id) ON DELETE CASCADE,
+    week_number INTEGER NOT NULL CHECK (week_number > 0 AND week_number <= 52),
+    theory_topic VARCHAR(255),
+    lab_topic VARCHAR(255),
+    theory_description TEXT,
+    lab_description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(course_id, week_number)
 );
 
 -- ============================================

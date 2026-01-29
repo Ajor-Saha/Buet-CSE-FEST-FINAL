@@ -3,7 +3,9 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import logger from "morgan";
 import dotenv from "dotenv";
-import user_router from './routes/auth-route';
+import authRouter from './routes/auth-route';
+import coursesRouter from './routes/courses-route';
+import materialsRouter from './routes/materials-route';
 
 
 dotenv.config();
@@ -23,7 +25,9 @@ app.use(
 );
 
 // Mount routers
-app.use('/api/auth', user_router);
+app.use('/api/auth', authRouter);
+app.use('/api/courses', coursesRouter);
+app.use('/api/materials', materialsRouter);
 
 
 

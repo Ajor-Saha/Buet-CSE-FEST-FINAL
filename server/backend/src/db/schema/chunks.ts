@@ -1,28 +1,40 @@
-import { pgTable, varchar, timestamp, uuid, integer, text, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, varchar, timestamp, uuid, integer, text, boolean, customType } from "drizzle-orm/pg-core";
 import { materialsTable } from "./materials";
 
+// Custom vector type for pgvector extension
+const vector = customType<{ data: number[]; driverData: string }>({
+  dataType() {
+    return 'vector(1536)';
+  },
+});
+
+// Part 2: Intelligent Search Engine (RAG)
 export const materialChunksTable = pgTable("material_chunks", {
   chunk_id: uuid("chunk_id").primaryKey().defaultRandom(),
   material_id: uuid("material_id").references(() => materialsTable.material_id, { onDelete: 'cascade' }).notNull(),
-  chunk_index: integer("chunk_index").notNull(),
+  
+  // Chunk content
   chunk_text: text("chunk_text").notNull(),
-  chunk_type: varchar("chunk_type", { length: 50 }),
-  code_language: varchar("code_language", { length: 50 }),
-  code_context: jsonb("code_context"),
+  chunk_order: integer("chunk_order").notNull(),
+  chunk_type: varchar("chunk_type", { length: 50 }),  // 'text', 'code', 'equation', etc.
+  
+  // Context metadata
   page_number: integer("page_number"),
-  start_position: integer("start_position"),
-  end_position: integer("end_position"),
-  metadata: jsonb("metadata"),
+  line_start: integer("line_start"),
+  line_end: integer("line_end"),
+  
+  // For code chunks
+  language: varchar("language", { length: 50 }),
+  is_code: boolean("is_code").default(false),
+  
   created_at: timestamp("created_at").defaultNow(),
 });
 
-// Note: pgvector extension is needed for this table
-// You'll need to install @neondatabase/serverless or use a custom type
 export const chunkEmbeddingsTable = pgTable("chunk_embeddings", {
   embedding_id: uuid("embedding_id").primaryKey().defaultRandom(),
   chunk_id: uuid("chunk_id").references(() => materialChunksTable.chunk_id, { onDelete: 'cascade' }).notNull(),
-  // embedding: vector("embedding", { dimensions: 1536 }), // Uncomment when pgvector is set up
-  embedding_model: varchar("embedding_model", { length: 100 }).default('text-embedding-ada-002'),
+  embedding: vector("embedding"),  // OpenAI ada-002 dimension (1536)
+  model: varchar("model", { length: 100 }).default('text-embedding-ada-002'),
   created_at: timestamp("created_at").defaultNow(),
 });
 

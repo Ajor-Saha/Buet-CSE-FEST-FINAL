@@ -1,30 +1,34 @@
-import { pgTable, varchar, timestamp, uuid, boolean, text, jsonb, integer } from "drizzle-orm/pg-core";
+import { pgTable, varchar, timestamp, uuid, text, boolean, integer } from "drizzle-orm/pg-core";
 import { usersTable } from "./users";
 import { coursesTable } from "./courses";
 import { generatedContentTable } from "./generated-content";
 
+// Part 5: Conversational Chat Interface
 export const chatSessionsTable = pgTable("chat_sessions", {
   session_id: uuid("session_id").primaryKey().defaultRandom(),
-  user_id: uuid("user_id").references(() => usersTable.user_id),
-  course_id: uuid("course_id").references(() => coursesTable.course_id),
+  user_id: uuid("user_id").references(() => usersTable.user_id, { onDelete: 'cascade' }).notNull(),
+  course_id: uuid("course_id").references(() => coursesTable.course_id, { onDelete: 'set null' }),
   title: varchar("title", { length: 255 }),
   is_active: boolean("is_active").default(true),
-  started_at: timestamp("started_at").defaultNow(),
-  last_activity_at: timestamp("last_activity_at").defaultNow(),
+  created_at: timestamp("created_at").defaultNow(),
+  last_activity: timestamp("last_activity").defaultNow(),
 });
 
 export const chatMessagesTable = pgTable("chat_messages", {
   message_id: uuid("message_id").primaryKey().defaultRandom(),
   session_id: uuid("session_id").references(() => chatSessionsTable.session_id, { onDelete: 'cascade' }).notNull(),
-  role: varchar("role", { length: 20 }).notNull(),
+  
+  // Message details
+  role: varchar("role", { length: 20 }).notNull(),  // 'user', 'assistant', 'system'
   content: text("content").notNull(),
-  context_materials: uuid("context_materials").array(),
-  grounding_chunks: uuid("grounding_chunks").array(),
-  generated_content_id: uuid("generated_content_id").references(() => generatedContentTable.generated_id),
-  action_type: varchar("action_type", { length: 50 }),
-  action_metadata: jsonb("action_metadata"),
-  user_rating: integer("user_rating"),
-  user_feedback: text("user_feedback"),
+  
+  // AI context tracking
+  retrieved_chunks: uuid("retrieved_chunks").array(),  // Chunks used for RAG
+  generated_content_id: uuid("generated_content_id").references(() => generatedContentTable.content_id),
+  model: varchar("model", { length: 100 }),
+  
+  // Message metadata
+  tokens_used: integer("tokens_used"),
   created_at: timestamp("created_at").defaultNow(),
 });
 

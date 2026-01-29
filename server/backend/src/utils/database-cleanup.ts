@@ -1,8 +1,5 @@
 import { db } from "../db";
 import { sql } from "drizzle-orm";
-import { 
-  votersTable, 
-} from "../db/schema";
 
 /**
  * Database cleanup utility function
@@ -17,28 +14,21 @@ export async function cleanupDatabase(cleanupFlag: number = 0): Promise<void> {
     if (cleanupFlag === 0) {
       console.log("🗑️  Cleaning database - removing all existing data...");
       
-      // Delete all data from tables in reverse dependency order
-      await db.delete(votersTable);
+      // For now, manual cleanup via SQL if needed
+      // await db.execute(sql`TRUNCATE TABLE chat_messages CASCADE`);
+      // await db.execute(sql`TRUNCATE TABLE chat_sessions CASCADE`);
+      // ... etc for all tables
       
-      console.log("✅ Database cleaned successfully - all data removed");
-      
-      // Reset auto-increment sequences (SQLite specific)
-      // Note: sqlite_sequence table only exists if AUTOINCREMENT columns have been used
-      try {
-        await db.run(sql`DELETE FROM sqlite_sequence WHERE name IN ('voters')`);
-        console.log("✅ Auto-increment sequences reset");
-      } catch (sequenceError) {
-        // sqlite_sequence table doesn't exist yet, which is fine
-        console.log("ℹ️  No auto-increment sequences to reset (table doesn't exist yet)");
-      }
+      console.log("✅ Database cleanup skipped - implement if needed");
       
     } else if (cleanupFlag === 1) {
       console.log("📊 Database cleanup disabled - keeping existing data");
       
-      // Optional: Log current data counts
-      const voterCount = await db.select().from(votersTable).then(rows => rows.length);
+      // Optional: Log current data counts if needed
+      // const userCount = await db.select().from(usersTable).then(rows => rows.length);
+      // console.log(`ℹ️  Current user count: ${userCount}`);
       
-      console.log(`ℹ️  Current voter count: ${voterCount}`);
+      console.log("ℹ️  Data counts not displayed - enable if needed");
     } else {
       console.log("⚠️  Invalid cleanup flag value. Use 0 to clean or 1 to keep data");
     }
