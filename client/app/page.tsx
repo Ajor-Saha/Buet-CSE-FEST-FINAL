@@ -15,9 +15,14 @@ export default function Home() {
             </div>
             <span className="text-xl font-bold text-foreground">CourseWise</span>
           </div>
-          <Link href="/dashboard">
-            <Button variant="outline">Dashboard</Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link href="/auth/signin">
+              <Button variant="outline">Sign in</Button>
+            </Link>
+            <Link href="/dashboard">
+              <Button>Dashboard</Button>
+            </Link>
+          </div>
         </div>
       </header>
 

@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import {
   AudioWaveform,
   BookOpen,
@@ -26,6 +27,7 @@ import { TeamSwitcher } from "./team-switcher"
 import { NavMain } from "./nav-main"
 import { NavProjects } from "./nav-projects"
 import { NavUser } from "./nav-user"
+import { useAuth } from "@/components/auth/auth-provider"
 
 // This is sample data.
 const data = {
@@ -148,6 +150,17 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const router = useRouter()
+  const { user, signout } = useAuth()
+
+  const sidebarUser = user
+    ? {
+        name: user.full_name,
+        email: user.email,
+        avatar: user.avatar_url || "/avatars/shadcn.jpg",
+      }
+    : data.user
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -158,7 +171,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavProjects projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser
+          user={sidebarUser}
+          onLogout={async () => {
+            await signout()
+            router.push("/auth/signin")
+          }}
+        />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

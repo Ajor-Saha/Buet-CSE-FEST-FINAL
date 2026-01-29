@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import * as React from "react";
 import { AppSidebar } from "@/components/app-sidebar"
 import {
   Breadcrumb,
@@ -21,8 +23,17 @@ import {
 import { Home, BookOpen, } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ModeToggle } from "@/components/theme-toggle";
+import { useAuth } from "@/components/auth/auth-provider";
 
 export default function Page() {
+  const router = useRouter();
+  const { user, hydrateDone } = useAuth();
+
+  React.useEffect(() => {
+    if (!hydrateDone) return;
+    if (!user) router.replace("/auth/signin");
+  }, [hydrateDone, user, router]);
+
   const [courses, setCourses] = useState([
     {
       id: "1",
@@ -65,7 +76,13 @@ export default function Page() {
     },
   ])
 
-  
+  if (!hydrateDone || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-muted-foreground">
+        Loading...
+      </div>
+    );
+  }
 
   return (
     <SidebarProvider>

@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { db } from "../db";
-import { userTable } from "../db/schema";
+import { usersTable } from "../db/schema";
 import { eq } from "drizzle-orm";
 import { ApiResponse } from "../utils/api-response";
 import { asyncHandler } from "../utils/asyncHandler";
@@ -22,27 +22,24 @@ export const verifyJWT = asyncHandler( async (
     }
 
     // Verify and decode the JWT
-    const decodedToken = jwt.verify(
-      token,
-      process.env.JWT_SECRET as string
-    ) as { userId: string };
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET as string) as any;
 
-    if (!decodedToken || !decodedToken.userId) {
+    const userId = decodedToken?.user_id ?? decodedToken?.userId;
+    if (!userId) {
       return res.status(401).json(new ApiResponse(401, null, "Invalid access token"));
     }
 
     // Fetch the user from the database
     const user = await db
       .select({
-        userId: userTable.userId,
-        email: userTable.email,
-        firstName: userTable.firstName,
-        lastName: userTable.lastName,
-        companyId: userTable.companyId,
-        role: userTable.role,
+        user_id: usersTable.user_id,
+        email: usersTable.email,
+        full_name: usersTable.full_name,
+        role: usersTable.role,
+        avatar_url: usersTable.avatar_url,
       })
-      .from(userTable)
-      .where(eq(userTable.userId, decodedToken.userId))
+      .from(usersTable)
+      .where(eq(usersTable.user_id, userId))
       .then((result) => result[0]); 
       
     if (!user) {
