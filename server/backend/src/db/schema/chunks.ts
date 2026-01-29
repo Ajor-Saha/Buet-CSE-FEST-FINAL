@@ -1,10 +1,10 @@
-import { pgTable, varchar, timestamp, uuid, integer, text, boolean, customType } from "drizzle-orm/pg-core";
+import { pgTable, varchar, timestamp, uuid, integer, text, boolean, customType, jsonb } from "drizzle-orm/pg-core";
 import { materialsTable } from "./materials";
 
 // Custom vector type for pgvector extension
 const vector = customType<{ data: number[]; driverData: string }>({
   dataType() {
-    return 'vector(1536)';
+    return 'vector(1024)';
   },
 });
 
@@ -16,7 +16,7 @@ export const materialChunksTable = pgTable("material_chunks", {
   // Chunk content
   chunk_text: text("chunk_text").notNull(),
   chunk_order: integer("chunk_order").notNull(),
-  chunk_type: varchar("chunk_type", { length: 50 }),  // 'text', 'code', 'equation', etc.
+  chunk_type: varchar("chunk_type", { length: 50 }),  // 'text', 'code', 'table', 'equation', etc.
   
   // Context metadata
   page_number: integer("page_number"),
@@ -26,6 +26,10 @@ export const materialChunksTable = pgTable("material_chunks", {
   // For code chunks
   language: varchar("language", { length: 50 }),
   is_code: boolean("is_code").default(false),
+  
+  // Rich metadata for better retrieval
+  chunk_metadata: jsonb("chunk_metadata"), // Store headers, context, etc.
+  vector_id: varchar("vector_id", { length: 255 }), // Pinecone vector ID for tracking
   
   created_at: timestamp("created_at").defaultNow(),
 });

@@ -1,4 +1,4 @@
-import { pgTable, varchar, timestamp, uuid, integer, text, bigint } from "drizzle-orm/pg-core";
+import { pgTable, varchar, timestamp, uuid, integer, text, bigint, boolean } from "drizzle-orm/pg-core";
 import { coursesTable } from "./courses";
 import { usersTable } from "./users";
 
@@ -27,6 +27,12 @@ export const materialsTable = pgTable("materials", {
   // Analytics
   view_count: integer("view_count").default(0),
   download_count: integer("download_count").default(0),
+  
+  // RAG Indexing Status
+  is_indexed: boolean("is_indexed").default(false),
+  indexed_at: timestamp("indexed_at"),
+  vector_count: integer("vector_count").default(0),
+  chunk_count: integer("chunk_count").default(0),
   
   uploaded_by: uuid("uploaded_by").references(() => usersTable.user_id),
   uploaded_at: timestamp("uploaded_at").defaultNow(),

@@ -20,16 +20,16 @@ const pinecone = new PineconeClient({
   apiKey: process.env.PINECONE_API_KEY!,
 });
 
-// Initialize OpenAI Embeddings
+// Initialize OpenAI Embeddings - Using large model for better accuracy
 const embeddings = new OpenAIEmbeddings({
-  modelName: 'text-embedding-3-small',
-  dimensions: 512,
+  modelName: 'text-embedding-3-large',
+  dimensions: 1024,
 });
 
 /**
- * Helper: Chunk text with 20% overlap
+ * Helper: Chunk text with overlap, optimized for RAG
  */
-function chunkTextWithOverlap(text: string, chunkSize: number = 1000, overlapPercentage: number = 20): string[] {
+function chunkTextWithOverlap(text: string, chunkSize: number = 800, overlapPercentage: number = 25): string[] {
   const overlap = Math.floor(chunkSize * (overlapPercentage / 100));
   const chunks: string[] = [];
   
@@ -45,6 +45,39 @@ function chunkTextWithOverlap(text: string, chunkSize: number = 1000, overlapPer
   }
   
   return chunks;
+}
+
+/**
+ * Helper: Detect if text contains code
+ */
+function isCodeContent(text: string): { isCode: boolean; language?: string } {
+  // Code patterns
+  const codePatterns = [
+    /^(import|from|include|using|package)\s+/m,
+    /\bfunction\s+\w+\s*\(/,
+    /\bclass\s+\w+/,
+    /\bdef\s+\w+\s*\(/,
+    /\bpublic\s+(class|interface|static)/,
+    /^\s*(const|let|var)\s+\w+\s*=/m,
+    /\w+\s*\(\s*\)\s*{/,
+    /\bfor\s*\(/,
+    /\bwhile\s*\(/,
+    /\bif\s*\(/,
+  ];
+  
+  const hasCodePattern = codePatterns.some(pattern => pattern.test(text));
+  
+  // Language detection
+  let language: string | undefined;
+  if (hasCodePattern) {
+    if (/(import|from)\s+\w+/.test(text) && /def\s+/.test(text)) language = 'python';
+    else if (/(const|let|var|function)/.test(text)) language = 'javascript';
+    else if (/(public|private|class)\s+/.test(text) && /;$/.test(text.trim())) language = 'java';
+    else if (/#include/.test(text)) language = 'cpp';
+    else language = 'code';
+  }
+  
+  return { isCode: hasCodePattern, language };
 }
 
 /**
@@ -221,112 +254,160 @@ export const parseFromUrl = asyncHandler(async (req: Request, res: Response) => 
       type: image.type,
     })) || [];
 
-    // Create chunks for RAG system
-    const chunks: any[] = [];
+    // Create unified chunks for both DB and Pinecone (CRITICAL FIX)
+    console.log('✂️  Creating intelligent chunks with 25% overlap...');
     
-    // Chunk by pages (can be made more sophisticated)
+    const chunksForDB: any[] = [];
+    const documentsForPinecone: Document[] = [];
+    let chunkOrderCounter = 0;
+
+    // Process each page
     for (let i = 0; i < textPages.length; i++) {
       const textPage = textPages[i];
       const mdPage = markdownPages[i];
       const pageInfo = pageData.find(p => p.page_number === textPage.page_number);
 
-      // Create text chunk
-      if (textPage.text && textPage.text.trim().length > 0) {
-        chunks.push({
-          chunk_type: 'text',
+      if (!textPage.text || textPage.text.trim().length === 0) continue;
+
+      // Detect if this page contains code
+      const codeAnalysis = isCodeContent(textPage.text);
+
+      // Split page text into smaller chunks with overlap
+      const pageChunks = chunkTextWithOverlap(textPage.text, 800, 25);
+
+      for (let chunkIdx = 0; chunkIdx < pageChunks.length; chunkIdx++) {
+        const chunkText = pageChunks[chunkIdx];
+        
+        // Enhanced context header for better retrieval
+        const contextHeader = `[${material.title} - ${material.category.toUpperCase()} - Page ${textPage.page_number}]\n`;
+        const fullChunkText = contextHeader + chunkText;
+
+        // Prepare rich metadata
+        const chunkMetadata = {
+          material_title: material.title,
+          category: material.category,
+          material_type: material.material_type,
+          topic: material.topic,
+          week_number: material.week_number,
+          tags: material.tags,
           page_number: textPage.page_number,
-          content: textPage.text,
-          markdown_content: mdPage?.markdown || null,
-          metadata: {
-            has_tables: pageInfo?.tables?.length > 0 || false,
-            table_count: pageInfo?.tables?.length || 0,
-          },
+          chunk_index: chunkIdx,
+          total_page_chunks: pageChunks.length,
+          has_tables: pageInfo?.tables?.length > 0 || false,
+          is_code: codeAnalysis.isCode,
+          language: codeAnalysis.language,
+          created_at: new Date().toISOString(),
+        };
+
+        // Store in DB
+        chunksForDB.push({
+          material_id: material_id,
+          chunk_text: chunkText,
+          chunk_order: chunkOrderCounter++,
+          chunk_type: codeAnalysis.isCode ? 'code' : 'text',
+          page_number: textPage.page_number,
+          language: codeAnalysis.language,
+          is_code: codeAnalysis.isCode,
+          chunk_metadata: chunkMetadata,
         });
+
+        // Store in Pinecone with rich metadata
+        documentsForPinecone.push(
+          new Document({
+            pageContent: fullChunkText,
+            metadata: {
+              material_id: material_id,
+              course_id: material.course_id,
+              ...chunkMetadata,
+            },
+          })
+        );
       }
 
-      // Create separate chunks for tables
+      // Handle tables separately
       if (pageInfo?.tables) {
         for (const table of pageInfo.tables) {
-          chunks.push({
+          const tableText = `[TABLE - ${material.title} - Page ${textPage.page_number}]\n` +
+                           `Rows: ${table.rows}, Columns: ${table.columns}\n` +
+                           JSON.stringify(table.content, null, 2);
+
+          const tableMetadata = {
+            material_title: material.title,
+            category: material.category,
+            material_type: material.material_type,
+            topic: material.topic,
+            week_number: material.week_number,
+            page_number: textPage.page_number,
+            chunk_type: 'table',
+            table_rows: table.rows,
+            table_columns: table.columns,
+            created_at: new Date().toISOString(),
+          };
+
+          chunksForDB.push({
+            material_id: material_id,
+            chunk_text: JSON.stringify(table.content),
+            chunk_order: chunkOrderCounter++,
             chunk_type: 'table',
             page_number: textPage.page_number,
-            content: JSON.stringify(table.content),
-            metadata: {
-              rows: table.rows,
-              columns: table.columns,
-              bbox: table.bbox,
-            },
+            is_code: false,
+            chunk_metadata: tableMetadata,
           });
+
+          documentsForPinecone.push(
+            new Document({
+              pageContent: tableText,
+              metadata: {
+                material_id: material_id,
+                course_id: material.course_id,
+                ...tableMetadata,
+              },
+            })
+          );
         }
       }
     }
 
-    // Store chunks in database for RAG
+    // Store chunks in database
     console.log('💾 Storing chunks in database...');
     
     const insertedChunks = await db
       .insert(materialChunksTable)
-      .values(
-        chunks.map((chunk, index) => ({
-          material_id: material_id,
-          chunk_text: chunk.content, // Use chunk_text field from schema
-          chunk_order: index, // Use chunk_order field from schema
-          chunk_type: chunk.chunk_type,
-          page_number: chunk.page_number,
-          is_code: chunk.chunk_type === 'code',
-        }))
-      )
+      .values(chunksForDB)
       .returning();
 
-    console.log(`✅ Stored ${insertedChunks.length} chunks`);
+    console.log(`✅ Stored ${insertedChunks.length} chunks in DB`);
 
     // Generate embeddings and store in Pinecone
-    let embeddingsGenerated = 0;
     let pineconeVectorsStored = 0;
 
     if (process.env.OPENAI_API_KEY && process.env.PINECONE_API_KEY && process.env.PINECONE_INDEX) {
       try {
-        console.log('🔢 Generating embeddings with 20% overlap chunking...');
-
-        // Combine all text for overlap chunking
-        const allText = textPages.map((page: any) => page.text).join('\n\n');
-
-        // Create overlapping chunks
-        const overlappingChunks = chunkTextWithOverlap(allText, 1000, 20);
-
-        console.log(`📦 Created ${overlappingChunks.length} chunks with 20% overlap`);
-
-        // Create documents with metadata for Pinecone
-        const documents: Document[] = overlappingChunks.map((chunk, index) => {
-          return new Document({
-            pageContent: chunk,
-            metadata: {
-              material_id: material_id,
-              course_id: material.course_id,
-              material_title: material.title,
-              material_category: material.category,
-              chunk_index: index,
-              total_chunks: overlappingChunks.length,
-              chunk_type: 'text',
-              overlap_percentage: 20,
-            },
-          });
-        });
+        console.log('☁️  Storing embeddings in Pinecone...');
 
         // Get Pinecone index
         const pineconeIndex = pinecone.Index(process.env.PINECONE_INDEX!);
 
         // Store in Pinecone with embeddings
-        console.log('☁️  Storing embeddings in Pinecone...');
-        await PineconeStore.fromDocuments(documents, embeddings, {
+        await PineconeStore.fromDocuments(documentsForPinecone, embeddings, {
           pineconeIndex,
           namespace: `course_${material.course_id}`,
         });
 
-        embeddingsGenerated = overlappingChunks.length;
-        pineconeVectorsStored = overlappingChunks.length;
+        pineconeVectorsStored = documentsForPinecone.length;
 
-        console.log(`✅ Generated ${embeddingsGenerated} embeddings and stored in Pinecone`);
+        console.log(`✅ Stored ${pineconeVectorsStored} vectors in Pinecone`);
+
+        // Update material indexing status
+        await db
+          .update(materialsTable)
+          .set({
+            is_indexed: true,
+            indexed_at: new Date(),
+            vector_count: pineconeVectorsStored,
+            chunk_count: insertedChunks.length,
+          })
+          .where(eq(materialsTable.material_id, material_id));
       } catch (embeddingError: any) {
         console.error('⚠️  Error generating embeddings:', embeddingError.message);
         // Don't fail the entire request if embeddings fail
@@ -353,12 +434,13 @@ export const parseFromUrl = asyncHandler(async (req: Request, res: Response) => 
             total_tables: tables.length,
             total_images: images.length,
             total_chunks: insertedChunks.length,
-            embeddings_generated: embeddingsGenerated,
             pinecone_vectors_stored: pineconeVectorsStored,
+            chunk_size: 800,
+            overlap_percentage: 25,
           },
           chunks_stored: insertedChunks.length,
-          embeddings_generated: embeddingsGenerated,
           pinecone_vectors_stored: pineconeVectorsStored,
+          indexed: pineconeVectorsStored > 0,
           content: {
             text_pages: textPages,
             markdown_pages: markdownPages,
@@ -367,7 +449,7 @@ export const parseFromUrl = asyncHandler(async (req: Request, res: Response) => 
             structured_items: pageData,
           },
         },
-        embeddingsGenerated > 0 
+        pineconeVectorsStored > 0 
           ? 'Document parsed, chunked, embedded, and stored successfully'
           : 'Document parsed and chunks stored successfully (embeddings skipped)'
       )
