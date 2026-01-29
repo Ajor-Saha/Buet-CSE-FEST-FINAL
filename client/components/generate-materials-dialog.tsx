@@ -67,28 +67,6 @@ function getScoreColor(score: number): string {
   return "text-red-600"
 }
 
-function ScoreCircle({ score, label }: { score: number; label: string }) {
-  return (
-    <div className="flex flex-col items-center gap-1">
-      <div
-        className={cn(
-          "relative h-14 w-14 rounded-full border-4 flex items-center justify-center",
-          score >= 8
-            ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950"
-            : score >= 6
-            ? "border-yellow-500 bg-yellow-50 dark:bg-yellow-950"
-            : "border-red-500 bg-red-50 dark:bg-red-950"
-        )}
-      >
-        <span className={cn("text-lg font-bold", getScoreColor(score))}>
-          {score.toFixed(1)}
-        </span>
-      </div>
-      <span className="text-xs text-muted-foreground text-center">{label}</span>
-    </div>
-  )
-}
-
 type GenerateMaterialsDialogProps = {
   trigger: React.ReactNode
   courseId: string
@@ -379,29 +357,9 @@ ${validation.suggestions.map((s) => `- ${s}`).join("\n")}
           {/* Generated Content (for enhanced type) */}
           {generatedTitle && generatedDescription && (
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="gap-1">
-                    <ScrollText className="h-3 w-3" />
-                    Enhanced Content
-                  </Badge>
-                  <Badge variant="outline">{sources.length} sources</Badge>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" onClick={handleReset}>
-                    <X className="h-4 w-4 mr-1" />
-                    Clear
-                  </Button>
-                  <Button size="sm" onClick={handleDownloadMarkdown} className="gap-1">
-                    <Download className="h-4 w-4" />
-                    Download
-                  </Button>
-                </div>
-              </div>
-
-              {/* Validation Results */}
+              {/* Validation Scores - Always visible at top */}
               {isValidating && (
-                <div className="rounded-lg border bg-muted/30 p-4 flex items-center gap-3">
+                <div className="rounded-lg border bg-indigo-50 dark:bg-indigo-950 p-3 flex items-center gap-3">
                   <Loader2 className="h-5 w-5 animate-spin text-indigo-600" />
                   <div>
                     <p className="font-medium text-sm">Validating Content Quality...</p>
@@ -413,58 +371,71 @@ ${validation.suggestions.map((s) => `- ${s}`).join("\n")}
               )}
 
               {validation && (
-                <div className="rounded-lg border bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4 space-y-4">
-                  {/* Header */}
-                  <div className="flex items-center gap-2">
-                    <ShieldCheck className="h-5 w-5 text-indigo-600" />
-                    <span className="font-semibold">Quality Validation</span>
-                  </div>
-
-                  {/* Score Circles */}
-                  <div className="flex justify-around">
-                    <ScoreCircle score={validation.confidence_score} label="Confidence" />
-                    <ScoreCircle score={validation.accuracy_score} label="Accuracy" />
-                    <ScoreCircle score={validation.clarity_score} label="Clarity" />
-                  </div>
-
-                  {/* Overall Quality Badge */}
-                  <div className="flex items-center justify-center">
-                    <div
-                      className={cn(
-                        "px-4 py-2 rounded-full text-sm font-medium",
-                        validation.confidence_score >= 8
-                          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300"
+                <div className="rounded-lg border-2 border-indigo-200 dark:border-indigo-800 bg-gradient-to-r from-indigo-50 via-white to-indigo-50 dark:from-indigo-950 dark:via-slate-900 dark:to-indigo-950 p-3">
+                  {/* Compact Score Row */}
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <ShieldCheck className="h-4 w-4 text-indigo-600" />
+                      <span className="font-semibold text-sm">Quality Score</span>
+                    </div>
+                    
+                    {/* Inline Scores */}
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs text-muted-foreground">Confidence:</span>
+                        <span className={cn("font-bold text-sm", getScoreColor(validation.confidence_score))}>
+                          {validation.confidence_score.toFixed(1)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs text-muted-foreground">Accuracy:</span>
+                        <span className={cn("font-bold text-sm", getScoreColor(validation.accuracy_score))}>
+                          {validation.accuracy_score.toFixed(1)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs text-muted-foreground">Clarity:</span>
+                        <span className={cn("font-bold text-sm", getScoreColor(validation.clarity_score))}>
+                          {validation.clarity_score.toFixed(1)}
+                        </span>
+                      </div>
+                      <div
+                        className={cn(
+                          "px-2 py-0.5 rounded-full text-xs font-medium",
+                          validation.confidence_score >= 8
+                            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300"
+                            : validation.confidence_score >= 6
+                            ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300"
+                            : "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
+                        )}
+                      >
+                        {validation.confidence_score >= 8
+                          ? "Excellent"
                           : validation.confidence_score >= 6
-                          ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300"
-                          : "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
-                      )}
-                    >
-                      {validation.confidence_score >= 8
-                        ? "✓ Excellent Quality"
-                        : validation.confidence_score >= 6
-                        ? "◐ Good Quality"
-                        : "⚠ Needs Improvement"}
+                          ? "Good"
+                          : "Improve"}
+                      </div>
                     </div>
                   </div>
 
                   {/* Expandable Details */}
                   <Collapsible open={showDetails} onOpenChange={setShowDetails}>
                     <CollapsibleTrigger asChild>
-                      <Button variant="ghost" size="sm" className="w-full gap-1">
+                      <Button variant="ghost" size="sm" className="w-full gap-1 mt-2 h-7 text-xs">
                         {showDetails ? (
                           <>
-                            <ChevronUp className="h-4 w-4" />
+                            <ChevronUp className="h-3 w-3" />
                             Hide Details
                           </>
                         ) : (
                           <>
-                            <ChevronDown className="h-4 w-4" />
-                            Show Details
+                            <ChevronDown className="h-3 w-3" />
+                            View Strengths, Weaknesses & Suggestions
                           </>
                         )}
                       </Button>
                     </CollapsibleTrigger>
-                    <CollapsibleContent className="space-y-3 pt-2">
+                    <CollapsibleContent className="space-y-3 pt-3 border-t mt-2">
                       {/* Explanation */}
                       <div className="text-sm text-muted-foreground bg-white dark:bg-slate-950 rounded p-3">
                         {validation.explanation}
@@ -531,6 +502,27 @@ ${validation.suggestions.map((s) => `- ${s}`).join("\n")}
                 </div>
               )}
 
+              {/* Header with actions */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className="gap-1">
+                    <ScrollText className="h-3 w-3" />
+                    Enhanced Content
+                  </Badge>
+                  <Badge variant="outline">{sources.length} sources</Badge>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={handleReset}>
+                    <X className="h-4 w-4 mr-1" />
+                    Clear
+                  </Button>
+                  <Button size="sm" onClick={handleDownloadMarkdown} className="gap-1">
+                    <Download className="h-4 w-4" />
+                    Download
+                  </Button>
+                </div>
+              </div>
+
               {/* Sources */}
               {sources.length > 0 && (
                 <div className="flex flex-wrap gap-1">
@@ -549,7 +541,7 @@ ${validation.suggestions.map((s) => `- ${s}`).join("\n")}
               )}
 
               {/* Content Preview */}
-              <div className="rounded-lg border bg-muted/30 p-4 max-h-[200px] overflow-y-auto space-y-3">
+              <div className="rounded-lg border bg-muted/30 p-4 max-h-[180px] overflow-y-auto space-y-3">
                 <h3 className="text-lg font-semibold">{generatedTitle}</h3>
                 <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap text-sm">
                   {generatedDescription}
