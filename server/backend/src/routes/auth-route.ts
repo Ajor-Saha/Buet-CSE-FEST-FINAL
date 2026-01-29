@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import {
   changePassword,
+  getCurrentUser,
   login,
   logout,
   signup,
@@ -15,6 +16,7 @@ const user_router = Router();
 user_router.route('/signup').post(signup);
 user_router.route('/signin').post(login);
 user_router.route('/signout').post(verifyJWT, logout);
+user_router.route('/me').get(verifyJWT, getCurrentUser);
 user_router
   .route('/update-profile-picture')
   .put(verifyJWT, uploadMiddleware, updateProfilePicture);
