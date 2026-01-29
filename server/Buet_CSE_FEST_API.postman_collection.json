@@ -194,6 +194,36 @@
 					"response": []
 				},
 				{
+					"name": "Get Current User",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/auth/me",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"me"
+							]
+						},
+						"description": "Get current authenticated user profile. Requires authentication."
+					},
+					"response": []
+				},
+				{
 					"name": "Change Password",
 					"request": {
 						"auth": {
@@ -236,6 +266,635 @@
 			"description": "User authentication and profile management endpoints"
 		},
 		{
+			"name": "Courses",
+			"item": [
+				{
+					"name": "Create Course",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"code\": \"CSE101\",\n  \"name\": \"Introduction to Computer Science\",\n  \"description\": \"Fundamentals of computer science\",\n  \"department_id\": \"dept-id-here\",\n  \"semester\": \"Spring\",\n  \"year\": 2024,\n  \"has_theory\": true,\n  \"has_lab\": true,\n  \"total_weeks\": 16\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/courses",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"courses"
+							]
+						},
+						"description": "Create a new course (Admin only). Course must have at least theory or lab component."
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Courses",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/courses?department_id=&semester=&year=",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"courses"
+							],
+							"query": [
+								{
+									"key": "department_id",
+									"value": "",
+									"description": "Filter by department ID"
+								},
+								{
+									"key": "semester",
+									"value": "",
+									"description": "Filter by semester"
+								},
+								{
+									"key": "year",
+									"value": "",
+									"description": "Filter by year"
+								}
+							]
+						},
+						"description": "Get all active courses with optional filters. Requires authentication."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Course by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/courses/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"courses",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "course-id-here"
+								}
+							]
+						},
+						"description": "Get details of a specific course by ID. Requires authentication."
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Enrolled Courses",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/courses/my-courses",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"courses",
+								"my-courses"
+							]
+						},
+						"description": "Get all courses that the current user is enrolled in. Requires authentication."
+					},
+					"response": []
+				},
+				{
+					"name": "Enroll in Course",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/courses/:id/enroll",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"courses",
+								":id",
+								"enroll"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "course-id-here"
+								}
+							]
+						},
+						"description": "Enroll current user in a course. Requires authentication."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Course",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Updated Course Name\",\n  \"description\": \"Updated description\",\n  \"semester\": \"Fall\",\n  \"year\": 2024,\n  \"has_theory\": true,\n  \"has_lab\": false,\n  \"total_weeks\": 14,\n  \"is_active\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/courses/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"courses",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "course-id-here"
+								}
+							]
+						},
+						"description": "Update course details (Admin only). Requires authentication."
+					},
+					"response": []
+				}
+			],
+			"description": "Course management endpoints"
+		},
+		{
+			"name": "Materials",
+			"item": [
+				{
+					"name": "Upload Material",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "course_id",
+									"value": "course-id-here",
+									"type": "text"
+								},
+								{
+									"key": "title",
+									"value": "Lecture 1 Notes",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "Introduction to the course",
+									"type": "text"
+								},
+								{
+									"key": "category",
+									"value": "theory",
+									"type": "text",
+									"description": "Either 'theory' or 'lab'"
+								},
+								{
+									"key": "content_type",
+									"value": "lecture",
+									"type": "text"
+								},
+								{
+									"key": "week_number",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "topic",
+									"value": "Introduction",
+									"type": "text"
+								},
+								{
+									"key": "tags",
+									"value": "[\"basics\", \"introduction\"]",
+									"type": "text"
+								},
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/path/to/material.pdf"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/materials/upload",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"materials",
+								"upload"
+							]
+						},
+						"description": "Upload course material (Admin only). Supports file upload to R2 storage. Requires authentication."
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Materials",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/materials?course_id=&category=&week_number=&topic=&content_type=&search=",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"materials"
+							],
+							"query": [
+								{
+									"key": "course_id",
+									"value": "",
+									"description": "Filter by course ID"
+								},
+								{
+									"key": "category",
+									"value": "",
+									"description": "Filter by category (theory/lab)"
+								},
+								{
+									"key": "week_number",
+									"value": "",
+									"description": "Filter by week number"
+								},
+								{
+									"key": "topic",
+									"value": "",
+									"description": "Filter by topic"
+								},
+								{
+									"key": "content_type",
+									"value": "",
+									"description": "Filter by content type"
+								},
+								{
+									"key": "search",
+									"value": "",
+									"description": "Search in title and description"
+								}
+							]
+						},
+						"description": "Get all materials with optional filters. Requires authentication."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Material by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/materials/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"materials",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "material-id-here"
+								}
+							]
+						},
+						"description": "Get details of a specific material. Increments view count. Requires authentication."
+					},
+					"response": []
+				},
+				{
+					"name": "Browse Materials by Category",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/materials/browse/:category?course_id=",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"materials",
+								"browse",
+								":category"
+							],
+							"query": [
+								{
+									"key": "course_id",
+									"value": "",
+									"description": "Optional: Filter by course ID"
+								}
+							],
+							"variable": [
+								{
+									"key": "category",
+									"value": "theory",
+									"description": "Either 'theory' or 'lab'"
+								}
+							]
+						},
+						"description": "Browse materials by category (theory or lab). Requires authentication."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Materials by Week",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/materials/week/:week_number?course_id=",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"materials",
+								"week",
+								":week_number"
+							],
+							"query": [
+								{
+									"key": "course_id",
+									"value": "",
+									"description": "Optional: Filter by course ID"
+								}
+							],
+							"variable": [
+								{
+									"key": "week_number",
+									"value": "1"
+								}
+							]
+						},
+						"description": "Get all materials for a specific week. Requires authentication."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Material",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Updated Material Title\",\n  \"description\": \"Updated description\",\n  \"category\": \"theory\",\n  \"week_number\": 2,\n  \"topic\": \"Updated Topic\",\n  \"tags\": [\"tag1\", \"tag2\"],\n  \"programming_language\": \"python\",\n  \"is_public\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/materials/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"materials",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "material-id-here"
+								}
+							]
+						},
+						"description": "Update material metadata (Admin only). Requires authentication."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Material",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/materials/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"materials",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "material-id-here"
+								}
+							]
+						},
+						"description": "Delete material and associated file from storage (Admin only). Requires authentication."
+					},
+					"response": []
+				},
+				{
+					"name": "Track Material Download",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/materials/:id/download",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"materials",
+								":id",
+								"download"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "material-id-here"
+								}
+							]
+						},
+						"description": "Increment download count for a material. Returns file URL. Requires authentication."
+					},
+					"response": []
+				}
+			],
+			"description": "Course materials management endpoints"
+		},
+		{
 			"name": "AI Bot",
 			"item": [
 				{
@@ -247,7 +906,7 @@
 							"mode": "formdata",
 							"formdata": [
 								{
-									"key": "image",
+									"key": "files",
 									"type": "file",
 									"src": "/path/to/your/image.jpg",
 									"description": "Image file to analyze"
