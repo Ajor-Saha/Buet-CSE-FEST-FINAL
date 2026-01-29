@@ -19,6 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useAuth } from "@/components/auth/auth-provider";
+import { ChatSheet } from "@/components/chatbot/chat-sheet";
 
 const navItems = [
   { label: "Overview", href: "#overview" },
@@ -396,6 +397,21 @@ export default function Home() {
           </p>
         </div>
       </footer>
+
+      <ChatSheet
+        variant="landing"
+        title="ContextVault Assistant"
+        description="Ask about the platform or explore the demo."
+        contentClassName="sm:max-w-md"
+        trigger={
+          <Button
+            className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg bg-indigo-600 hover:bg-indigo-500"
+            aria-label="Open chatbot"
+          >
+            <Bot className="h-6 w-6 text-white" />
+          </Button>
+        }
+      />
     </div>
   );
 }

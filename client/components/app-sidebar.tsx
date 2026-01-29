@@ -13,6 +13,7 @@ import {
   Settings2,
   GraduationCap,
   Plus,
+  MessagesSquare,
 } from "lucide-react"
 
 
@@ -22,12 +23,18 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { TeamSwitcher } from "./team-switcher"
 import { NavMain } from "./nav-main"
 import { NavProjects } from "./nav-projects"
 import { NavUser } from "./nav-user"
 import { useAuth } from "@/components/auth/auth-provider"
+import { ChatSheet } from "@/components/chatbot/chat-sheet"
 
 // This is sample data.
 const data = {
@@ -168,6 +175,25 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
+        <SidebarGroup>
+          <SidebarGroupLabel>Assistant</SidebarGroupLabel>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <ChatSheet
+                variant="dashboard"
+                title="ContextVault RAG Chat"
+                description="Static preview. RAG integration coming next."
+                contentClassName="sm:max-w-xl"
+                trigger={
+                  <SidebarMenuButton tooltip="Open chatbot">
+                    <MessagesSquare />
+                    <span>Open Chatbot</span>
+                  </SidebarMenuButton>
+                }
+              />
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
         <NavProjects projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>
