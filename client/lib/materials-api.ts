@@ -28,6 +28,20 @@ export type ApiResponse<T> = {
   message?: string
 }
 
+export type UploadMaterialData = {
+  material_id: string
+  file_info: {
+    original_filename?: string | null
+    file_url: string
+  }
+  parsing_info?: {
+    total_pages?: number
+    total_tables?: number
+    total_images?: number
+    total_chunks?: number
+  }
+}
+
 export async function apiGetMaterials(params?: {
   course_id?: string
   category?: "theory" | "lab"
@@ -194,7 +208,7 @@ export async function apiUploadMaterial(
     return { ok: false as const, status: res.status, message }
   }
 
-  return { ok: true as const, data: payload as ApiResponse<Material> }
+  return { ok: true as const, data: payload as ApiResponse<UploadMaterialData> }
 }
 
 export async function apiUpdateMaterial(

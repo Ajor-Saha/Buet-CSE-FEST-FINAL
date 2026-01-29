@@ -26,6 +26,7 @@ import { ModeToggle } from "@/components/theme-toggle";
 import { useAuth } from "@/components/auth/auth-provider";
 import { apiGetCourseById, type Course } from "@/lib/courses-api";
 import { apiUploadMaterial } from "@/lib/materials-api";
+import { apiParseFromUrl } from "@/lib/pdf-parser-api";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -47,6 +48,7 @@ export default function UploadMaterialPage() {
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [parsing, setParsing] = useState(false);
   const [activeCategory, setActiveCategory] = useState<"theory" | "lab">("theory");
 
   const [materialForm, setMaterialForm] = useState({
@@ -135,8 +137,29 @@ export default function UploadMaterialPage() {
       return;
     }
 
-    toast.success("Material uploaded successfully");
+    const materialId = res.data.data?.material_id;
+    const fileUrl = res.data.data?.file_info?.file_url;
+
+    toast.success("Material uploaded. Starting parser...");
+    setParsing(true);
+
+    if (materialId && fileUrl) {
+      const parseRes = await apiParseFromUrl(
+        { material_id: materialId, file_url: fileUrl },
+        token
+      );
+
+      if (!parseRes.ok) {
+        toast.error(parseRes.message || "Failed to parse PDF");
+      } else {
+        toast.success("PDF parsed and indexed");
+      }
+    } else {
+      toast.error("Missing material_id or file_url from upload response");
+    }
+
     setUploading(false);
+    setParsing(false);
     // Reset form
     setMaterialForm({
       file: null,
@@ -352,9 +375,15 @@ export default function UploadMaterialPage() {
                       </p>
                     </div>
 
-                    <Button type="submit" className="w-full" disabled={uploading || !materialForm.file}>
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      disabled={uploading || parsing || !materialForm.file}
+                    >
                       {uploading ? (
                         <>Uploading...</>
+                      ) : parsing ? (
+                        <>Parsing PDF...</>
                       ) : (
                         <>
                           <Upload className="h-4 w-4 mr-2" />
