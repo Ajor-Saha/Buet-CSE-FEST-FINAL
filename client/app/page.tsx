@@ -1,9 +1,22 @@
+"use client";
+
 import Link from "next/link";
-import { ArrowRight, BookOpen, Brain, Calendar, FolderTree, Sparkles, TrendingUp } from "lucide-react";
+import {
+  ArrowRight,
+  BookOpen,
+  Brain,
+  Calendar,
+  FolderTree,
+  Sparkles,
+  TrendingUp,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useAuth } from "@/components/auth/auth-provider";
 
 export default function Home() {
+  const { user, signout, hydrateDone } = useAuth();
+
   return (
     <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-950 dark:via-gray-900 dark:to-blue-950">
       {/* Header */}
@@ -16,12 +29,30 @@ export default function Home() {
             <span className="text-xl font-bold text-foreground">CourseWise</span>
           </div>
           <div className="flex items-center gap-2">
-            <Link href="/auth/signin">
-              <Button variant="outline">Sign in</Button>
-            </Link>
-            <Link href="/dashboard">
-              <Button>Dashboard</Button>
-            </Link>
+            {!hydrateDone ? null : user ? (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={async () => {
+                    await signout();
+                  }}
+                >
+                  Sign out
+                </Button>
+                <Link href="/dashboard">
+                  <Button>Dashboard</Button>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href="/auth/signin">
+                  <Button variant="outline">Sign in</Button>
+                </Link>
+                <Link href="/auth/signup">
+                  <Button>Sign up</Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
