@@ -5,16 +5,54 @@ import { Request, Response } from 'express';
 import fs from 'fs/promises';
 import fsSync from 'fs';
 import path from 'path';
+import { OpenAIEmbeddings } from '@langchain/openai';
+import { PineconeStore } from '@langchain/pinecone';
+import { Pinecone as PineconeClient } from '@pinecone-database/pinecone';
+import { Document } from '@langchain/core/documents';
 import { asyncHandler } from '../utils/asyncHandler';
 import { ApiResponse } from '../utils/api-response';
 import { db } from '../db';
 import { materialsTable, materialChunksTable } from '../db/schema';
 import { eq } from 'drizzle-orm';
 
+// Initialize Pinecone
+const pinecone = new PineconeClient({
+  apiKey: process.env.PINECONE_API_KEY!,
+});
+
+// Initialize OpenAI Embeddings
+const embeddings = new OpenAIEmbeddings({
+  modelName: 'text-embedding-3-small',
+  dimensions: 512,
+});
+
+/**
+ * Helper: Chunk text with 20% overlap
+ */
+function chunkTextWithOverlap(text: string, chunkSize: number = 1000, overlapPercentage: number = 20): string[] {
+  const overlap = Math.floor(chunkSize * (overlapPercentage / 100));
+  const chunks: string[] = [];
+  
+  let startIndex = 0;
+  while (startIndex < text.length) {
+    const endIndex = Math.min(startIndex + chunkSize, text.length);
+    chunks.push(text.substring(startIndex, endIndex));
+    
+    // Move forward by (chunkSize - overlap)
+    startIndex += (chunkSize - overlap);
+    
+    if (endIndex >= text.length) break;
+  }
+  
+  return chunks;
+}
+
 /**
  * Parse material from URL and prepare for RAG system
  * @route POST /api/pdf-parser/parse-from-url
  */
+
+
 export const parseFromUrl = asyncHandler(async (req: Request, res: Response) => {
   try {
     // Check if user is authenticated
@@ -242,6 +280,61 @@ export const parseFromUrl = asyncHandler(async (req: Request, res: Response) => 
 
     console.log(`✅ Stored ${insertedChunks.length} chunks`);
 
+    // Generate embeddings and store in Pinecone
+    let embeddingsGenerated = 0;
+    let pineconeVectorsStored = 0;
+
+    if (process.env.OPENAI_API_KEY && process.env.PINECONE_API_KEY && process.env.PINECONE_INDEX) {
+      try {
+        console.log('🔢 Generating embeddings with 20% overlap chunking...');
+
+        // Combine all text for overlap chunking
+        const allText = textPages.map((page: any) => page.text).join('\n\n');
+
+        // Create overlapping chunks
+        const overlappingChunks = chunkTextWithOverlap(allText, 1000, 20);
+
+        console.log(`📦 Created ${overlappingChunks.length} chunks with 20% overlap`);
+
+        // Create documents with metadata for Pinecone
+        const documents: Document[] = overlappingChunks.map((chunk, index) => {
+          return new Document({
+            pageContent: chunk,
+            metadata: {
+              material_id: material_id,
+              course_id: material.course_id,
+              material_title: material.title,
+              material_category: material.category,
+              chunk_index: index,
+              total_chunks: overlappingChunks.length,
+              chunk_type: 'text',
+              overlap_percentage: 20,
+            },
+          });
+        });
+
+        // Get Pinecone index
+        const pineconeIndex = pinecone.Index(process.env.PINECONE_INDEX!);
+
+        // Store in Pinecone with embeddings
+        console.log('☁️  Storing embeddings in Pinecone...');
+        await PineconeStore.fromDocuments(documents, embeddings, {
+          pineconeIndex,
+          namespace: `course_${material.course_id}`,
+        });
+
+        embeddingsGenerated = overlappingChunks.length;
+        pineconeVectorsStored = overlappingChunks.length;
+
+        console.log(`✅ Generated ${embeddingsGenerated} embeddings and stored in Pinecone`);
+      } catch (embeddingError: any) {
+        console.error('⚠️  Error generating embeddings:', embeddingError.message);
+        // Don't fail the entire request if embeddings fail
+      }
+    } else {
+      console.log('⚠️  Skipping embeddings: OpenAI or Pinecone not configured');
+    }
+
     // Clean up temporary file
     await fs.unlink(tempFilePath);
 
@@ -260,8 +353,12 @@ export const parseFromUrl = asyncHandler(async (req: Request, res: Response) => 
             total_tables: tables.length,
             total_images: images.length,
             total_chunks: insertedChunks.length,
+            embeddings_generated: embeddingsGenerated,
+            pinecone_vectors_stored: pineconeVectorsStored,
           },
           chunks_stored: insertedChunks.length,
+          embeddings_generated: embeddingsGenerated,
+          pinecone_vectors_stored: pineconeVectorsStored,
           content: {
             text_pages: textPages,
             markdown_pages: markdownPages,
@@ -270,7 +367,9 @@ export const parseFromUrl = asyncHandler(async (req: Request, res: Response) => 
             structured_items: pageData,
           },
         },
-        'Document parsed and chunks stored successfully'
+        embeddingsGenerated > 0 
+          ? 'Document parsed, chunked, embedded, and stored successfully'
+          : 'Document parsed and chunks stored successfully (embeddings skipped)'
       )
     );
   } catch (error: any) {

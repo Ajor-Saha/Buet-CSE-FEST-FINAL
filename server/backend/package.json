@@ -20,6 +20,7 @@
     "@langchain/core": "^1.1.17",
     "@langchain/google-genai": "^2.1.11",
     "@langchain/openai": "^1.2.3",
+    "@langchain/pinecone": "^1.0.1",
     "@llamaindex/llama-cloud": "^1.1.0",
     "@neondatabase/serverless": "^1.0.2",
     "@pinecone-database/pinecone": "^6.1.4",
