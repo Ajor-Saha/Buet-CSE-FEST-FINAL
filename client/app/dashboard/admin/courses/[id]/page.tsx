@@ -20,7 +20,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
-import { ArrowLeft, Upload, GraduationCap, FlaskConical, FileText, Download, Eye } from "lucide-react"
+import { ArrowLeft, Upload, GraduationCap, FlaskConical, FileText, Download, Eye, Bot, Sparkles } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ModeToggle } from "@/components/theme-toggle";
 import { useAuth } from "@/components/auth/auth-provider";
@@ -29,6 +29,8 @@ import { apiGetMaterials, type Material } from "@/lib/materials-api";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
+import { CourseChatSheet } from "@/components/chatbot/course-chat-sheet"
+import { GenerateMaterialsDialog } from "@/components/generate-materials-dialog"
 
 export default function ManageCoursePage() {
   const router = useRouter();
@@ -186,6 +188,26 @@ export default function ManageCoursePage() {
               </Breadcrumb>
             </div>
             <div className="flex items-center gap-2">
+              <CourseChatSheet
+                courseId={courseId}
+                courseName={course?.name}
+                trigger={
+                  <Button size="sm" variant="outline" className="gap-2">
+                    <Bot className="h-4 w-4" />
+                    <span className="hidden sm:inline">Ask AI</span>
+                  </Button>
+                }
+              />
+              <GenerateMaterialsDialog
+                courseId={courseId}
+                courseName={course?.name}
+                trigger={
+                  <Button size="sm" variant="outline" className="gap-2">
+                    <Sparkles className="h-4 w-4" />
+                    <span className="hidden sm:inline">Generate</span>
+                  </Button>
+                }
+              />
               <Link href={`/dashboard/admin/courses/${courseId}/upload`}>
                 <Button size="sm" className="gap-2">
                   <Upload className="h-4 w-4" />
