@@ -32,7 +32,7 @@ export const uploadMiddleware = (req: Request, res: Response, next: NextFunction
 export const uploadFilesMiddleware = (req: Request, res: Response, next: NextFunction) => {
   const form = new IncomingForm({
     multiples: true, // Allow multiple files
-    maxFileSize: 10 * 1024 * 1024, // 10MB max file size
+    maxFileSize: 50 * 1024 * 1024, // 50MB max file size
   });
   
   form.parse(req, (err, fields, files) => {
@@ -48,13 +48,19 @@ export const uploadFilesMiddleware = (req: Request, res: Response, next: NextFun
     console.log('Parsed files:', files);
     console.log('Parsed fields:', fields);
     
-    // Attach fields to req.body
-    req.body = { ...req.body, ...fields };
+    // Flatten fields (formidable v3 returns arrays)
+    const flattenedFields: any = {};
+    for (const [key, value] of Object.entries(fields)) {
+      flattenedFields[key] = Array.isArray(value) ? value[0] : value;
+    }
     
-    // Handle the 'files' field specifically
-    const uploadedFiles = files.files;
-    if (uploadedFiles) {
-      req.files = uploadedFiles;
+    // Attach fields to req.body
+    req.body = { ...req.body, ...flattenedFields };
+    
+    // Handle the 'file' field for materials upload
+    const uploadedFile = files.file;
+    if (uploadedFile) {
+      (req as any).file = Array.isArray(uploadedFile) ? uploadedFile[0] : uploadedFile;
     }
     
     next();

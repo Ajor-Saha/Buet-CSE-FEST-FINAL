@@ -10,7 +10,7 @@ import {
   trackDownload
 } from '../controllers/materials-controller';
 import { authMiddleware } from '../middleware/auth-middleware';
-import { uploadMiddleware } from '../middleware/upload-middleware';
+import { uploadFilesMiddleware } from '../middleware/upload-middleware';
 
 const router = express.Router();
 
@@ -18,7 +18,7 @@ const router = express.Router();
 router.use(authMiddleware);
 
 // Upload material (Admin only)
-router.post('/upload', uploadMiddleware, uploadMaterial);
+router.post('/upload', uploadFilesMiddleware, uploadMaterial);
 
 // Get all materials with filters
 router.get('/', getMaterials);
