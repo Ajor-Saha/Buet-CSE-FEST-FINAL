@@ -1,19 +1,19 @@
 services:
   postgres:
-    image: postgres:15.1-alpine
-    container_name: practice_db
+    image: pgvector/pgvector:pg16
+    container_name: learning_platform_db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: practice_db
+      POSTGRES_DB: learning_platform
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
       - "5434:5432"
     volumes:
-      - practice_postgres_data:/var/lib/postgresql/data
+      - learning_postgres_data:/var/lib/postgresql/data
       - ./data/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     networks:
-      - practice_network
+      - learning_network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -22,27 +22,27 @@ services:
 
   pgweb:
     image: sosedoff/pgweb:latest
-    container_name: practice_pgweb
+    container_name: learning_pgweb
     restart: unless-stopped
     ports:
       - "8082:8081"
     environment:
-      - PGWEB_DATABASE_URL=postgres://postgres:postgres@postgres:5432/practice_db?sslmode=disable
+      - PGWEB_DATABASE_URL=postgres://postgres:postgres@postgres:5432/learning_platform?sslmode=disable
     depends_on:
       - postgres
     networks:
-      - practice_network
+      - learning_network
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: practice_backend
+    container_name: learning_backend
     restart: unless-stopped
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/practice_db
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/learning_platform
       - PORT=8000
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
@@ -50,13 +50,13 @@ services:
       postgres:
         condition: service_healthy
     networks:
-      - practice_network
+      - learning_network
     volumes:
       - ./backend/src:/app/src:ro
 
 volumes:
-  practice_postgres_data:
+  learning_postgres_data:
 
 networks:
-  practice_network:
+  learning_network:
     driver: bridge

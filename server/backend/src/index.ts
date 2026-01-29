@@ -3,8 +3,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import logger from "morgan";
 import dotenv from "dotenv";
-import contact_router from "./routes/contact-route";
-import aibot_router from "./routes/aibot-route";
+import user_router from './routes/auth-route';
 
 
 dotenv.config();
@@ -24,8 +23,7 @@ app.use(
 );
 
 // Mount routers
-app.use("/", contact_router); // Hackathon routes at root level
-app.use("/api/ai", aibot_router); // AI bot routes
+app.use('/api/auth', user_router);
 
 
 
