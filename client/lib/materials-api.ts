@@ -182,12 +182,19 @@ export async function apiUploadMaterial(
     credentials: "include",
   })
 
-  const data = await res.json()
+  const contentType = res.headers.get("content-type") || ""
+  const isJson = contentType.includes("application/json")
+  const payload = isJson ? await res.json().catch(() => null) : await res.text().catch(() => "")
+
   if (!res.ok) {
-    return { ok: false as const, status: res.status, message: data.message || "Failed to upload material" }
+    const message =
+      typeof payload === "string"
+        ? payload || "Failed to upload material"
+        : payload?.message || "Failed to upload material"
+    return { ok: false as const, status: res.status, message }
   }
 
-  return { ok: true as const, data: data as ApiResponse<Material> }
+  return { ok: true as const, data: payload as ApiResponse<Material> }
 }
 
 export async function apiUpdateMaterial(

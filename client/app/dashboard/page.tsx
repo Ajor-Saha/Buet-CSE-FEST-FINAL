@@ -35,7 +35,14 @@ export default function Page() {
 
   React.useEffect(() => {
     if (!hydrateDone) return;
-    if (!user) router.replace("/auth/signin");
+    if (!user) {
+      router.replace("/auth/signin");
+      return;
+    }
+    // Redirect admins to admin dashboard
+    if (user.role === "admin") {
+      router.replace("/dashboard/admin");
+    }
   }, [hydrateDone, user, router]);
 
   useEffect(() => {

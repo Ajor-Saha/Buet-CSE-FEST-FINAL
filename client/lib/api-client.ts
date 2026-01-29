@@ -9,7 +9,10 @@ export type ApiErr = {
 const DEFAULT_BASE_URL = "http://localhost:8000"
 
 export function getApiBaseUrl() {
-  return process.env.NEXT_PUBLIC_API_BASE_URL?.trim() || DEFAULT_BASE_URL
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.trim() || DEFAULT_BASE_URL
+  // In the browser, go through Next.js rewrite to avoid CORS.
+  if (typeof window !== "undefined") return ""
+  return baseUrl
 }
 
 function toMessage(payload: unknown): string {
