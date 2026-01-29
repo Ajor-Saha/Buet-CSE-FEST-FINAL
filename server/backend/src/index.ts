@@ -9,6 +9,7 @@ import materialsRouter from './routes/materials-route';
 import pdfParserRouter from './routes/pdf-parser-route';
 import ragRouter from './routes/rag-route';
 import contentRouter from './routes/content-route';
+import validationRouter from './routes/validation-route';
 
 
 dotenv.config();
@@ -34,6 +35,7 @@ app.use('/api/materials', materialsRouter);
 app.use('/api/pdf-parser', pdfParserRouter);
 app.use('/api/rag', ragRouter);
 app.use('/api/content', contentRouter);
+app.use('/api/validation', validationRouter);
 
 
 
