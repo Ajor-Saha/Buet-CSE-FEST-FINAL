@@ -1,5 +1,13 @@
-# Intelligent Learning Companion Platform
+# 🎓 Intelligent Learning Companion Platform
 ### BUET CSE Fest 2026 Hackathon (AI & API) - Team CodeOverclock
+
+> An intelligent learning companion that organizes fragmented course materials into a cohesive, accessible knowledge base. It generates validated study materials—notes, code, and downloadable documents—ensuring accuracy through automatic quality checks. Students use a conversational interface to access resources, ask questions, and receive grounded, citation-backed answers, improving learning efficiency.
+
+[![Next.js](https://img.shields.io/badge/Next.js-16.1.5-black?logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?logo=typescript)](https://www.typescriptlang.org/)
+[![Express](https://img.shields.io/badge/Express-4.21-green?logo=express)](https://expressjs.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-blue?logo=postgresql)](https://neon.tech/)
+[![Pinecone](https://img.shields.io/badge/Pinecone-Vector_DB-purple)](https://www.pinecone.io/)
 
 ## 📺 Demonstration Video
 
@@ -13,6 +21,25 @@
 - **Sanjoy Das**
 - **Md Ahasanul Haque Sazid**
 - **Ajor Saha**
+
+---
+
+## 📋 Table of Contents
+
+- [Problem Statement](#-problem-statement)
+- [Solution Overview](#-solution-overview)
+- [Architecture & Features](#️-architecture--features)
+- [System Architecture](#️-system-architecture-diagram)
+- [Tech Stack](#-tech-stack)
+- [Prerequisites](#-prerequisites)
+- [Installation](#-installation)
+- [Usage](#-usage)
+- [API Documentation](#-api-documentation)
+- [Workflows](#-workflows)
+- [Demo Walkthrough](#-demo-walkthrough)
+- [Why This Solution Stands Out](#-why-this-solution-stands-out)
+- [Future Enhancements](#-future-enhancements)
+- [Acknowledgments](#-acknowledgments)
 
 ---
 
@@ -248,6 +275,29 @@ Display Answer with Sources
 
 ---
 
+## 🏗️ System Architecture Diagram
+
+```mermaid
+graph TB
+    Client[Next.js Frontend] --> API[Express Backend]
+    API --> DB[(PostgreSQL - Neon)]
+    API --> Vector[(Pinecone Vector DB)]
+    API --> Storage[R2 Bucket / Cloudinary]
+    API --> LLM1[OpenAI GPT-4]
+    API --> LLM2[Claude Sonnet 4.5]
+    API --> LLM3[Gemini 2.5 Flash]
+    API --> Parser[LlamaIndex Cloud]
+    API --> Code[Piston API]
+    
+    style Client fill:#e3f2fd
+    style API fill:#fff3e0
+    style DB fill:#c8e6c9
+    style Vector fill:#f3e5f5
+    style Storage fill:#fff9c4
+```
+
+---
+
 ## 💡 Technical Highlights
 
 ### Hybrid Search & Generation
@@ -273,78 +323,381 @@ Every step is automated with quality checks at each stage.
 ## 🔧 Technology Stack
 
 **Frontend:**
-- Next.js 14+ with TypeScript
-- React with modern hooks
-- Tailwind CSS for styling
-- Shadcn UI components
+- **Framework**: Next.js 16.1.5 with React 19.2.3
+- **Language**: TypeScript 5.0+
+- **Styling**: Tailwind CSS + shadcn/ui components
+- **State Management**: React Hooks + Context API
+- **PDF Generation**: jsPDF
+- **Authentication**: JWT with HTTP-only cookies
 
 **Backend:**
-- Node.js + Express/Fastify
-- PostgreSQL for relational data
-- Vector Database for embeddings
-- S3-compatible storage for files
+- **Runtime**: Node.js 20+ with TypeScript
+- **Framework**: Express.js 4.21
+- **ORM**: Drizzle ORM
+- **Database**: PostgreSQL (Neon - serverless)
+- **Vector Database**: Pinecone for embeddings
+- **File Upload**: Multer + Formidable
+- **Storage**: Cloudflare R2 / Cloudinary
 
 **AI & ML:**
-- LlamaIndex for multimodal parsing
-- OpenAI for embeddings and generation
-- Piston server for code validation
-- Google Search API for external content
+- **Embeddings**: OpenAI text-embedding-3-small (1536D)
+- **LLM Models**:
+  - **Claude Sonnet 4.5** - Primary chat and content generation
+  - **Gemini 2.5 Flash** - Validation and Google Search integration
+  - **OpenAI GPT-4** - Fallback and embeddings
+- **Document Parsing**: LlamaIndex Cloud (LlamaParse) - Multimodal extraction
+- **Orchestration**: LangChain for workflow management
+- **Code Validation**: Piston API for multi-language execution
 
 **Infrastructure:**
 - Docker & Docker Compose
-- Drizzle ORM for database management
 - RESTful API architecture
+- Vector search with semantic similarity
 
 ---
 
-## 🚀 Getting Started
+## � Prerequisites
 
-### Prerequisites
-- Node.js 18+
-- PostgreSQL
-- Docker & Docker Compose
-- OpenAI API key
+Before setting up the project, ensure you have:
 
-### Quick Start
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd Buet-CSE-FEST-FINAL
-   ```
-
-2. **Setup Backend**
-   ```bash
-   cd server/backend
-   npm install
-   # Configure environment variables
-   docker-compose up -d
-   ```
-
-3. **Setup Frontend**
-   ```bash
-   cd client
-   pnpm install
-   pnpm dev
-   ```
-
-4. **Access the application**
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:8000
-
-For detailed setup instructions, see:
-- [Backend Setup](server/backend/readme.md)
-- [Frontend Setup](client/FRONTEND_SETUP.md)
-- [Docker Setup](server/DOCKER_SETUP.md)
+- **Node.js**: v20+ ([Download](https://nodejs.org/))
+- **pnpm**: v10+ (`npm install -g pnpm`)
+- **PostgreSQL**: Database access (Neon recommended for serverless)
+- **API Keys** (Required):
+  - 🔑 OpenAI API Key - [Get API Key](https://platform.openai.com/api-keys)
+  - 🔑 Anthropic API Key (Claude) - [Get API Key](https://console.anthropic.com/)
+  - 🔑 Google AI API Key (Gemini) - [Get API Key](https://aistudio.google.com/app/apikey)
+  - 🔑 Pinecone API Key - [Get API Key](https://www.pinecone.io/)
+  - 🔑 LlamaCloud API Key - [Get API Key](https://cloud.llamaindex.ai/)
+  - 🔑 Cloudinary or R2 credentials for file storage
 
 ---
 
-## 📚 Documentation
+## 🚀 Installation
 
-- [API Documentation](server/backend/API_DOCUMENTATION.md)
-- [Database Schema](server/backend/DATABASE_SCHEMA.md)
-- [RAG System Architecture](server/backend/WORKFLOW_PARSER_RAG.md)
-- [Quick Start Guide](ProblemStatement/QUICKSTART_GUIDE.md)
+### 1. Clone Repository
+
+```bash
+git clone https://github.com/your-repo/Buet-CSE-FEST-FINAL.git
+cd Buet-CSE-FEST-FINAL
+```
+
+### 2. Install Dependencies
+
+```bash
+# Install backend dependencies
+cd server/backend
+pnpm install
+
+# Install frontend dependencies
+cd ../../client
+pnpm install
+```
+
+### 3. Environment Configuration
+
+#### Backend `.env` (server/backend/.env)
+
+```env
+# Database
+DATABASE_URL=postgresql://user:password@host/database?sslmode=require
+
+# JWT Authentication
+JWT_SECRET=your-secret-key-minimum-32-characters-long
+
+# OpenAI
+OPENAI_API_KEY=sk-...
+
+# Anthropic Claude
+ANTHROPIC_API_KEY=sk-ant-...
+
+# Google Gemini
+GEMINI_API_KEY=...
+
+# Pinecone Vector Database
+PINECONE_API_KEY=...
+PINECONE_INDEX_NAME=course-materials
+
+# LlamaCloud (Document Parsing)
+LLAMA_CLOUD_API_KEY=llx-...
+
+# Storage - Cloudinary
+CLOUDINARY_CLOUD_NAME=...
+CLOUDINARY_API_KEY=...
+CLOUDINARY_API_SECRET=...
+
+# OR Storage - Cloudflare R2
+BUCKET_NAME=your-bucket
+PUBLIC_ACCESS_URL=https://your-bucket-url
+R2_ACCOUNT_ID=...
+R2_ACCESS_KEY_ID=...
+R2_SECRET_ACCESS_KEY=...
+
+# Piston API (Code Execution)
+PISTON_API_URL=https://emkc.org/api/v2/piston
+
+# Server Configuration
+PORT=8000
+NODE_ENV=development
+```
+
+#### Frontend `.env.local` (client/.env.local)
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+
+### 4. Database Setup
+
+```bash
+cd server/backend
+
+# Generate database schema from Drizzle definitions
+pnpm db:generate
+
+# Push schema to your PostgreSQL database
+pnpm db:push
+
+# (Optional) Open Drizzle Studio for database management
+pnpm db:studio
+```
+
+---
+
+## 🎮 Usage
+
+### Development Mode
+
+Start both servers in separate terminals:
+
+```bash
+# Terminal 1: Start backend server
+cd server/backend
+pnpm dev
+
+# Terminal 2: Start frontend
+cd client
+pnpm dev
+```
+
+**Access Points:**
+- 🌐 **Frontend**: http://localhost:3000
+- ⚡ **Backend API**: http://localhost:8000
+- 📚 **API Documentation**: http://localhost:8000/api/docs
+
+### Production Build
+
+```bash
+# Build backend
+cd server/backend
+pnpm build
+pnpm start
+
+# Build frontend
+cd client
+pnpm build
+pnpm start
+```
+
+---
+
+## 📚 API Documentation
+
+### 🔐 Authentication Endpoints
+
+```bash
+# Sign up new user
+POST /api/auth/signup
+Content-Type: application/json
+Body: {
+  "email": "user@example.com",
+  "password": "securepassword",
+  "full_name": "John Doe",
+  "role": "admin" | "student"
+}
+
+# User login
+POST /api/auth/login
+Content-Type: application/json
+Body: {
+  "email": "user@example.com",
+  "password": "securepassword"
+}
+
+# Get current authenticated user
+GET /api/auth/me
+Headers: Authorization: Bearer <jwt-token>
+```
+
+### 📚 Course Management
+
+```bash
+# Create new course (Admin only)
+POST /api/courses
+Headers: Authorization: Bearer <jwt-token>
+Body: {
+  "name": "Database Systems",
+  "code": "CSE-301",
+  "description": "Introduction to databases",
+  "semester": "Fall",
+  "year": 2026,
+  "has_theory": true,
+  "has_lab": true
+}
+
+# Get all courses
+GET /api/courses
+
+# Get course by ID with materials
+GET /api/courses/:id
+```
+
+### 📄 Material Upload & Management
+
+```bash
+# Upload course material (Admin)
+POST /api/materials/upload
+Content-Type: multipart/form-data
+Headers: Authorization: Bearer <jwt-token>
+Body: {
+  file: <File>,
+  course_id: "uuid",
+  title: "Lecture 1 - Introduction",
+  description: "Course overview",
+  category: "theory" | "lab",
+  content_type: "lecture" | "assignment" | "code",
+  week_number: 1,
+  topic: "Introduction",
+  tags: ["database", "sql"]
+}
+
+# Get materials with filters
+GET /api/materials?course_id=<uuid>&category=theory&week_number=1
+
+# Trigger parsing for uploaded material
+POST /api/materials/parse
+Body: {
+  "material_id": "uuid",
+  "file_url": "https://..."
+}
+```
+
+### 💬 RAG Chat Interface
+
+```bash
+# Send chat message
+POST /api/rag/chat
+Headers: Authorization: Bearer <jwt-token>
+Body: {
+  "course_id": "uuid",
+  "message": "Explain normalization in databases",
+  "conversation_id": "uuid" (optional)
+}
+
+Response: {
+  "response": "...",
+  "sources": [...],
+  "conversation_id": "uuid"
+}
+```
+
+### 🤖 AI Content Generation
+
+```bash
+# Generate enhanced learning content
+POST /api/content/generate-enhanced
+Headers: Authorization: Bearer <jwt-token>
+Body: {
+  "course_id": "uuid",
+  "user_prompt": "Create study notes on SQL joins"
+}
+
+Response: {
+  "content": "...",
+  "validation": {
+    "accuracy_score": 9.5,
+    "clarity_score": 9.0,
+    "confidence_score": 8.5,
+    "strengths": [...],
+    "weaknesses": [...]
+  },
+  "sources": [...]
+}
+
+# Generate PDF document
+POST /api/content/generate-pdf
+Body: {
+  "course_id": "uuid",
+  "user_prompt": "Generate lab manual for SQL queries"
+}
+```
+
+### ✅ Content Validation
+
+```bash
+# Validate generated text content
+POST /api/validation/validate-text
+Body: {
+  "content": "...",
+  "context": "..."
+}
+
+# Validate code with execution
+POST /api/validation/validate-code
+Body: {
+  "code": "print('Hello World')",
+  "language": "python",
+  "test_cases": [...]
+}
+```
+
+---
+
+## 🔄 Workflows
+
+### 📤 Material Upload & Processing Flow
+
+```mermaid
+graph LR
+    A[Admin Upload File] --> B[Store in R2/Cloudinary]
+    B --> C[Save Metadata to PostgreSQL]
+    C --> D[Trigger LlamaIndex Parser]
+    D --> E[Extract Multi-modal Content]
+    E --> F[Convert to Markdown]
+    F --> G[Chunk Text - 1000 chars + 25% overlap]
+    G --> H[Generate OpenAI Embeddings]
+    H --> I[Index in Pinecone Vector DB]
+```
+
+### 💬 RAG Chat Query Flow
+
+```mermaid
+graph LR
+    A[Student Query] --> B[Embed Question - OpenAI]
+    B --> C[Semantic Search - Pinecone]
+    C --> D[Filter by Course/Week/Topic]
+    D --> E[Retrieve Top-K Chunks]
+    E --> F[Build Context Prompt]
+    F --> G[Claude Sonnet 4.5 Generation]
+    G --> H[Response + Source Citations]
+```
+
+### 🤖 Enhanced Content Generation Flow
+
+```mermaid
+graph TB
+    A[User Prompt] --> B{Parallel Search}
+    B --> C[Internal: Pinecone RAG]
+    B --> D[External: Gemini Google Search]
+    C --> E[Merge & Deduplicate Contexts]
+    D --> E
+    E --> F[Gemini 2.5 Flash Generation]
+    F --> G[Auto Validation Module]
+    G --> H[Calculate Scores]
+    H --> I{Quality Check}
+    I -->|Pass| J[Display + Export Options]
+    I -->|Low Score| K[Show Warnings + Suggestions]
+```
 
 ---
 
@@ -365,51 +718,162 @@ Our demonstration video showcases the complete system in action:
 
 ---
 
+## � Project Structure
+
+```
+Buet-CSE-FEST-FINAL/
+├── client/                     # Next.js Frontend
+│   ├── app/                   # App Router Pages
+│   │   ├── auth/             # Authentication pages (signin/signup)
+│   │   ├── dashboard/        # Admin dashboard
+│   │   ├── courses/          # Course pages & detail views
+│   │   ├── layout.tsx        # Root layout
+│   │   └── page.tsx          # Home page
+│   ├── components/            # React Components
+│   │   ├── ui/               # shadcn/ui components (40+ components)
+│   │   ├── auth/             # Auth provider & forms
+│   │   ├── chatbot/          # Chat interface components
+│   │   ├── app-sidebar.tsx   # Navigation sidebar
+│   │   └── theme-provider.tsx
+│   ├── lib/                  # Utilities & API Clients
+│   │   ├── api-client.ts     # Axios instance
+│   │   ├── auth-api.ts       # Auth endpoints
+│   │   ├── courses-api.ts    # Course endpoints
+│   │   ├── materials-api.ts  # Material endpoints
+│   │   ├── rag-api.ts        # RAG chat endpoints
+│   │   └── validation-api.ts # Validation endpoints
+│   ├── hooks/                # Custom React hooks
+│   └── public/               # Static assets
+│
+├── server/backend/            # Express Backend
+│   ├── src/
+│   │   ├── controllers/      # Route handlers
+│   │   │   ├── authController.ts
+│   │   │   ├── courseController.ts
+│   │   │   ├── materialController.ts
+│   │   │   ├── ragController.ts
+│   │   │   ├── contentController.ts
+│   │   │   └── validationController.ts
+│   │   ├── routes/           # API route definitions
+│   │   ├── middleware/       # Auth, upload, error handling
+│   │   ├── db/              # Drizzle schema definitions
+│   │   │   └── schema.ts
+│   │   └── utils/           # Helper functions
+│   │       ├── llamaparse.ts    # LlamaIndex integration
+│   │       ├── pinecone.ts      # Vector DB operations
+│   │       ├── claude.ts        # Anthropic Claude client
+│   │       ├── gemini.ts        # Google Gemini client
+│   │       └── validation.ts    # Validation utilities
+│   ├── drizzle/             # Database migrations
+│   ├── uploads/             # Temporary file storage
+│   └── package.json
+│
+├── ProblemStatement/          # Documentation
+│   ├── problem_statement AI-API.pdf
+│   ├── QUICKSTART_GUIDE.md
+│   └── Thumbnail.png
+│
+└── README.md                 # This file
+```
+
+---
+
+## 📚 Additional Documentation
+
+For more detailed information, see:
+- [Backend API Documentation](server/backend/API_DOCUMENTATION.md)
+- [Database Schema](server/backend/DATABASE_SCHEMA.md)
+- [RAG System Workflow](server/backend/WORKFLOW_PARSER_RAG.md)
+- [Frontend Setup Guide](client/FRONTEND_SETUP.md)
+- [Docker Setup](server/DOCKER_SETUP.md)
+- [Quick Start Guide](ProblemStatement/QUICKSTART_GUIDE.md)
+
+---
+
 ## 🌟 Why This Solution Stands Out
 
-### 1. Beyond Traditional RAG
-Most RAG systems treat documents as plain text. We preserve structure, images, tables, and code - maintaining the richness of the original materials.
+### 1. 🎨 Beyond Traditional RAG
+Most RAG systems treat documents as plain text, losing critical structure. Our **LlamaIndex multimodal parsing** preserves:
+- Tables with structure
+- Images with context
+- Code blocks with syntax
+- Mathematical formulas
+- Document hierarchy
 
-### 2. Transparency & Trust
-Every answer comes with sources. Every generated content includes validation scores. Students and educators can verify the quality of AI-generated materials.
+### 2. 🔍 Transparency & Trust
+- **Source Attribution**: Every answer cites specific materials
+- **Validation Scores**: Accuracy, clarity, confidence metrics for all content
+- **Quality Assurance**: Automated checks prevent hallucinations
+- **Reproducible**: Students can verify answers against source documents
 
-### 3. Code That Actually Works
-Generated code is validated through actual execution, not just syntax checking. If it passes our validation, it will run.
+### 3. 💻 Code That Actually Works
+- **Real Execution**: Code validated through Piston API runtime
+- **Multi-Language**: Supports Python, JavaScript, Java, C++, and more
+- **Test Integration**: Automated test case validation
+- **Error Detection**: Syntax and runtime error reporting
 
-### 4. Dual Knowledge Sources
-We don't rely solely on course materials. When appropriate, we augment with external knowledge while prioritizing course-specific content.
+### 4. 🌐 Hybrid Knowledge Architecture
+- **Internal Search**: Semantic search in course-specific materials
+- **External Search**: Gemini Google Search for broader context
+- **Smart Fusion**: Intelligently merges and prioritizes sources
+- **Context-Aware**: Always grounds responses in course content first
 
-### 5. Production-Ready Architecture
-Built with scalability in mind - Docker containers, proper database design, modular architecture, and comprehensive error handling.
+### 5. 🏗️ Production-Ready Design
+- **Scalable**: Serverless database, vector DB, cloud storage
+- **Modular**: Clean separation of concerns
+- **Type-Safe**: Full TypeScript implementation
+- **Error Handling**: Comprehensive error boundaries and logging
+- **Performance**: Optimized chunking, caching, and parallel processing
 
 ---
 
 ## 📈 Future Enhancements
 
-- Multi-language support for international students
-- Collaborative study groups with shared materials
-- Progress tracking and learning analytics
-- Integration with learning management systems (LMS)
-- Mobile application for on-the-go learning
-- Advanced analytics for educators on content usage
+- 🌍 **Multi-language Support**: International student accessibility
+- 👥 **Collaborative Features**: Study groups with shared annotations
+- 📊 **Analytics Dashboard**: Learning progress and engagement metrics
+- 🔗 **LMS Integration**: Moodle, Canvas, Blackboard compatibility
+- 📱 **Mobile Applications**: iOS and Android native apps
+- 🎥 **Video Processing**: Lecture video transcription and summarization
+- 🔔 **Smart Notifications**: Personalized learning reminders
+- 🎯 **Adaptive Learning**: AI-powered study path recommendations
 
 ---
 
 ## 📄 License
 
-This project was developed for CSE Fest 2025 Hackathon - AI Segment by Team Code Over.
+This project was developed for **BUET CSE Fest 2026 Hackathon (AI & API Segment)** by **Team CodeOverclock**.
+
+Distributed under the ISC License.
 
 ---
 
 ## 🙏 Acknowledgments
 
-Special thanks to:
-- CSE Fest organizers for the opportunity
-- OpenAI for powerful language models
-- LlamaIndex team for multimodal parsing capabilities
-- The open-source community for amazing tools and libraries
+Special thanks to the amazing tools and teams that made this possible:
+
+- 🦙 [**LlamaIndex**](https://www.llamaindex.ai/) - Intelligent multimodal document parsing
+- 📌 [**Pinecone**](https://www.pinecone.io/) - High-performance vector database
+- 🤖 [**OpenAI**](https://openai.com/) - GPT-4 and embeddings
+- 🧠 [**Anthropic**](https://www.anthropic.com/) - Claude Sonnet 4.5
+- ✨ [**Google AI**](https://ai.google/) - Gemini 2.5 Flash and Search
+- 🎨 [**shadcn/ui**](https://ui.shadcn.com/) - Beautiful React components
+- 🐘 [**Neon**](https://neon.tech/) - Serverless PostgreSQL
+- ☁️ [**Cloudflare R2**](https://www.cloudflare.com/products/r2/) - Object storage
+- 🔧 [**Piston**](https://github.com/engineer-man/piston) - Code execution engine
+- 💚 The entire **open-source community** for incredible tools and libraries
 
 ---
 
-**Made with ❤️ by Team Code Over**
+<p align="center">
+  <strong>Built with ❤️ by Team CodeOverclock</strong><br>
+  <em>BUET CSE Fest 2026 Hackathon - AI & API Segment</em>
+</p>
+
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=GPdAra2zaCQ">
+    <img src="https://img.shields.io/badge/Watch-Demo%20Video-red?style=for-the-badge&logo=youtube" alt="Demo Video" />
+  </a>
+</p>
+
 
