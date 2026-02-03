@@ -50,6 +50,7 @@ export default function UploadMaterialPage() {
   const [uploading, setUploading] = useState(false);
   const [parsing, setParsing] = useState(false);
   const [activeCategory, setActiveCategory] = useState<"theory" | "lab">("theory");
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const [materialForm, setMaterialForm] = useState({
     file: null as File | null,
@@ -96,7 +97,13 @@ export default function UploadMaterialPage() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setMaterialForm({ ...materialForm, file: e.target.files[0] });
+      const selectedFile = e.target.files[0];
+      console.log("File selected:", selectedFile.name);
+      setMaterialForm({ ...materialForm, file: selectedFile });
+      toast.success(`File selected: ${selectedFile.name}`);
+    } else {
+      console.log("No file selected");
+      setMaterialForm({ ...materialForm, file: null });
     }
   };
 
@@ -108,6 +115,10 @@ export default function UploadMaterialPage() {
     }
 
     setUploading(true);
+
+    // Log and show which category is being uploaded
+    console.log(`Uploading material to category: ${activeCategory}`);
+    toast.info(`Uploading to ${activeCategory === 'theory' ? 'Theory' : 'Lab'} materials...`);
 
     const formData = new FormData();
     formData.append("file", materialForm.file);
@@ -128,6 +139,15 @@ export default function UploadMaterialPage() {
         .filter(Boolean);
       formData.append("tags", JSON.stringify(tags));
     }
+
+    // Log formData for debugging
+    console.log("FormData being sent:", {
+      course_id: courseId,
+      category: activeCategory,
+      title: materialForm.title,
+      material_type: materialForm.material_type,
+      week_number: materialForm.week_number,
+    });
 
     const res = await apiUploadMaterial(formData, token);
 
@@ -170,9 +190,12 @@ export default function UploadMaterialPage() {
       topic: "",
       tags: "",
     });
-    // Reset file input
-    const fileInput = document.getElementById("file") as HTMLInputElement;
-    if (fileInput) fileInput.value = "";
+    // Reset file input using ref
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+    
+    toast.success("Upload complete! You can now upload another file.");
   };
 
   if (!hydrateDone || !user || user.role !== "admin") {
@@ -271,26 +294,42 @@ export default function UploadMaterialPage() {
             <CardContent>
               <Tabs value={activeCategory} onValueChange={(v) => setActiveCategory(v as "theory" | "lab")}>
                 <TabsList className="grid w-full grid-cols-2 mb-6">
-                  <TabsTrigger value="theory" disabled={!course.has_theory}>
+                  <TabsTrigger value="theory">
                     <GraduationCap className="h-4 w-4 mr-2" />
                     Theory
                   </TabsTrigger>
-                  <TabsTrigger value="lab" disabled={!course.has_lab}>
+                  <TabsTrigger value="lab">
                     <FlaskConical className="h-4 w-4 mr-2" />
                     Lab
                   </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value={activeCategory}>
+                  {/* Category Indicator */}
+                  <div className="mb-4 p-3 rounded-lg bg-muted/50 border">
+                    <p className="text-sm">
+                      <span className="font-medium">Uploading to:</span>{" "}
+                      <span className={activeCategory === 'theory' ? 'text-blue-600 dark:text-blue-400' : 'text-purple-600 dark:text-purple-400'}>
+                        {activeCategory === 'theory' ? '📚 Theory' : '🔬 Lab'}
+                      </span>
+                    </p>
+                  </div>
+
                   <form onSubmit={handleUpload} className="space-y-6">
                     <div className="space-y-2">
                       <Label htmlFor="file">File *</Label>
                       <Input
                         id="file"
+                        ref={fileInputRef}
                         type="file"
                         onChange={handleFileChange}
                         required
                       />
+                      {materialForm.file && (
+                        <p className="text-xs text-green-600 dark:text-green-400">
+                          ✓ Selected: {materialForm.file.name}
+                        </p>
+                      )}
                       <p className="text-xs text-muted-foreground">
                         Upload PDF, slides, code files, or other materials
                       </p>
@@ -384,6 +423,11 @@ export default function UploadMaterialPage() {
                         <>Uploading...</>
                       ) : parsing ? (
                         <>Parsing PDF...</>
+                      ) : !materialForm.file ? (
+                        <>
+                          <Upload className="h-4 w-4 mr-2" />
+                          Select a file to upload
+                        </>
                       ) : (
                         <>
                           <Upload className="h-4 w-4 mr-2" />
@@ -391,6 +435,16 @@ export default function UploadMaterialPage() {
                         </>
                       )}
                     </Button>
+                    
+                    {/* Debug Info */}
+                    {process.env.NODE_ENV === 'development' && (
+                      <div className="text-xs text-muted-foreground p-2 bg-muted rounded">
+                        <p>Debug: File selected: {materialForm.file ? 'Yes' : 'No'}</p>
+                        <p>Uploading: {uploading ? 'Yes' : 'No'}</p>
+                        <p>Parsing: {parsing ? 'Yes' : 'No'}</p>
+                        <p>Button disabled: {(uploading || parsing || !materialForm.file) ? 'Yes' : 'No'}</p>
+                      </div>
+                    )}
                   </form>
                 </TabsContent>
               </Tabs>

@@ -42,6 +42,7 @@ import {
 import { apiValidateText, type TextEvaluation } from "@/lib/validation-api"
 import { useAuth } from "@/components/auth/auth-provider"
 import { toast } from "sonner"
+import { jsPDF } from "jspdf"
 
 type GenerationType = "enhanced" | "pdf"
 
@@ -253,6 +254,136 @@ ${validation.suggestions.map((s) => `- ${s}`).join("\n")}
     setSources([])
     setValidation(null)
     setShowDetails(false)
+  }
+
+  const handleGeneratePDFFromContent = () => {
+    if (!generatedTitle || !generatedDescription) {
+      toast.error("No content available to generate PDF")
+      return
+    }
+
+    try {
+      const doc = new jsPDF()
+      const pageWidth = doc.internal.pageSize.getWidth()
+      const pageHeight = doc.internal.pageSize.getHeight()
+      const margin = 20
+      const maxWidth = pageWidth - 2 * margin
+      let yPosition = margin
+
+      // Helper function to add text with word wrap and pagination
+      const addText = (text: string, fontSize: number, isBold: boolean = false, color: number[] = [0, 0, 0]) => {
+        doc.setFontSize(fontSize)
+        doc.setTextColor(color[0], color[1], color[2])
+        doc.setFont("helvetica", isBold ? "bold" : "normal")
+        
+        const lines = doc.splitTextToSize(text, maxWidth)
+        for (const line of lines) {
+          if (yPosition + fontSize / 2 > pageHeight - margin) {
+            doc.addPage()
+            yPosition = margin
+          }
+          doc.text(line, margin, yPosition)
+          yPosition += fontSize / 2 + 2
+        }
+      }
+
+      // Header - Dynamic height based on title length
+      doc.setFontSize(20)
+      doc.setFont("helvetica", "bold")
+      const titleLines = doc.splitTextToSize(generatedTitle, pageWidth - 2 * margin)
+      const headerHeight = Math.max(40, 15 + (titleLines.length * 12) + 10)
+      
+      // Draw header background
+      doc.setFillColor(99, 102, 241) // Indigo color
+      doc.rect(0, 0, pageWidth, headerHeight, 'F')
+      
+      // Draw title with wrapping
+      doc.setTextColor(255, 255, 255)
+      doc.setFontSize(20)
+      doc.setFont("helvetica", "bold")
+      let titleY = 20
+      titleLines.forEach((line: string) => {
+        doc.text(line, margin, titleY)
+        titleY += 12
+      })
+      
+      yPosition = headerHeight + 15
+
+      // Course info
+      doc.setTextColor(100, 100, 100)
+      doc.setFontSize(10)
+      doc.setFont("helvetica", "normal")
+      doc.text(`Course: ${courseName || courseId}`, margin, yPosition)
+      yPosition += 7
+      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, margin, yPosition)
+      yPosition += 7
+      doc.text(`Prompt: ${userPrompt}`, margin, yPosition)
+      yPosition += 15
+
+      // Separator line
+      doc.setDrawColor(200, 200, 200)
+      doc.line(margin, yPosition, pageWidth - margin, yPosition)
+      yPosition += 15
+
+      // Main content
+      addText(generatedDescription, 11, false, [0, 0, 0])
+      yPosition += 10
+
+      // Sources section
+      if (sources.length > 0) {
+        doc.setDrawColor(200, 200, 200)
+        doc.line(margin, yPosition, pageWidth - margin, yPosition)
+        yPosition += 15
+
+        addText("Sources Used", 14, true, [99, 102, 241])
+        yPosition += 5
+
+        sources.forEach((source, index) => {
+          const sourceText = `${index + 1}. ${source.material}${source.page ? ` (Page ${source.page})` : ""} - ${source.category || "N/A"}`
+          addText(sourceText, 10, false, [60, 60, 60])
+        })
+        yPosition += 10
+      }
+
+      // Validation section
+      if (validation) {
+        if (yPosition + 80 > pageHeight - margin) {
+          doc.addPage()
+          yPosition = margin
+        } else {
+          doc.setDrawColor(200, 200, 200)
+          doc.line(margin, yPosition, pageWidth - margin, yPosition)
+          yPosition += 15
+        }
+
+        addText("Quality Validation", 14, true, [99, 102, 241])
+        yPosition += 5
+
+        addText(`Confidence Score: ${validation.confidence_score.toFixed(1)}/10`, 10)
+        addText(`Accuracy Score: ${validation.accuracy_score.toFixed(1)}/10`, 10)
+        addText(`Clarity Score: ${validation.clarity_score.toFixed(1)}/10`, 10)
+        yPosition += 5
+
+        addText("Strengths:", 11, true, [16, 185, 129])
+        validation.strengths.forEach(s => addText(`• ${s}`, 10))
+        yPosition += 5
+
+        addText("Areas for Improvement:", 11, true, [234, 179, 8])
+        validation.weaknesses.forEach(w => addText(`• ${w}`, 10))
+        yPosition += 5
+
+        addText("Suggestions:", 11, true, [59, 130, 246])
+        validation.suggestions.forEach(s => addText(`• ${s}`, 10))
+      }
+
+      // Save the PDF
+      const filename = `${courseName || "course"}_content_${Date.now()}.pdf`
+      doc.save(filename)
+      toast.success(`PDF downloaded: ${filename}`)
+    } catch (error) {
+      console.error("PDF generation error:", error)
+      toast.error("Failed to generate PDF")
+    }
   }
 
   const SelectedIcon = generationTypeConfig[generationType].icon
@@ -569,28 +700,7 @@ ${validation.suggestions.map((s) => `- ${s}`).join("\n")}
                   )}
                 </Button>
                 <Button
-                  onClick={async () => {
-                    setIsGenerating(true)
-                    toast.info("Generating PDF version...")
-                    const res = await apiGeneratePDF(
-                      { course_id: courseId, user_prompt: userPrompt },
-                      token
-                    )
-                    if (res.ok) {
-                      const url = URL.createObjectURL(res.blob)
-                      const a = document.createElement("a")
-                      a.href = url
-                      a.download = res.filename
-                      document.body.appendChild(a)
-                      a.click()
-                      document.body.removeChild(a)
-                      URL.revokeObjectURL(url)
-                      toast.success("PDF downloaded!")
-                    } else {
-                      toast.error(res.message || "PDF generation failed")
-                    }
-                    setIsGenerating(false)
-                  }}
+                  onClick={handleGeneratePDFFromContent}
                   disabled={isGenerating || isValidating}
                   className="gap-2"
                 >
