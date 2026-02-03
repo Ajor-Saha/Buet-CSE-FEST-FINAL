@@ -1,210 +1,465 @@
+# 🎓 AI-Powered Supplementary Learning Platform
 
+> An intelligent learning companion that organizes fragmented course materials into a cohesive, accessible knowledge base. It generates validated study materials—notes, code, and downloadable documents—ensuring accuracy through automatic quality checks. Students use a conversational interface to access resources, ask questions, and receive grounded, citation-backed answers, improving learning efficiency.
 
-## Recommended Strategy for the Hackathon
-
-### 1. Decide Scope & Tech Stack Upfront 
-
-- **Backend**:  
-  - **Option 1 (Python)**: `FastAPI` (easy for AI/RAG, rich ecosystem).  
-  - **Option 2 (JS/TS)**: `Node + Express` or `Next.js` (API routes + frontend together).
-- **Frontend**:
-  - React (or Next.js pages) with:
-    - `Admin` view (upload, tag content).
-    - `Student` view (browse, search, chat).
-- **Database**:
-  - Relational DB: PostgreSQL / MySQL / even SQLite for demo.
-  - Tables for: `Courses`, `Materials`, `Chunks`, `Users` (if needed).
-- **Vector Search**:
-  - Easiest:
-    - Use a **hosted/vector solution** (e.g., Qdrant Cloud, Pinecone) if allowed,
-    - or **pgvector** inside Postgres,
-    - or a simple local vector DB.
-- **LLM**:
-  - Use whichever hosted LLM you can (OpenAI, local model, etc.) with:
-    - **RAG pipeline** using your course chunks.
-- **File storage**:
-  - For hackathon: store files **locally in a folder** and store only *paths+metadata* in DB.
-
-You **don’t** need to innovate on infra; your innovation is in **workflow + UX + validation**.
+[![Next.js](https://img.shields.io/badge/Next.js-16.1.5-black?logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?logo=typescript)](https://www.typescriptlang.org/)
+[![Express](https://img.shields.io/badge/Express-4.21-green?logo=express)](https://expressjs.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-blue?logo=postgresql)](https://neon.tech/)
+[![Pinecone](https://img.shields.io/badge/Pinecone-Vector_DB-purple)](https://www.pinecone.io/)
 
 ---
 
-## 2. Split the Work Into Vertical Slices (By Features)
+## 📋 Table of Contents
 
-Instead of “backend team” vs “frontend team”, organize around **features**, so each slice can be demoed independently:
-
-1. **Content Ingestion & Browsing (CMS + student browse)**  
-2. **Semantic Search (RAG retrieval)**  
-3. **AI Material Generation (notes, code snippets)**  
-4. **Validation & Evaluation (grounding, syntax/tests)**  
-5. **Chat Interface (unified access layer)**  
-
-Each slice should go *from DB → backend → UI → quick demo* as soon as possible.
-
----
-
-## 3. Detailed Plan By Competition Parts
-
-### Part 1: Content Management System (CMS)
-
-**Goal:** Admin uploads materials; they become searchable & browsable.
-
-- **Data model (minimum):**
-  - `Material`: `id`, `title`, `course`, `week`, `topic`, `type` (`theory`/`lab`), `tags`, `file_path`.
-  - `Chunk`: `id`, `material_id`, `chunk_text`, `chunk_type` (`slide_text`, `code`, `pdf_text`), `embedding`.
-- **Admin flow:**
-  - Simple web form:
-    - Upload file.
-    - Select: **Theory/Lab**, **Week**, **Topic**, tags.
-  - Backend:
-    - Save file to disk.
-    - Extract text:
-      - PDFs/slides: use a standard parser.
-      - Code: read as text.
-    - Chunk content (e.g., ~500 tokens per chunk).
-    - Compute embeddings and store in vector DB linked to `material_id`.
-- **Student browse:**
-  - Filter by `week`, `topic`, `Theory/Lab`, `file type`.
-  - Show list of materials; clicking shows preview or link to file.
-
-**Hackathon advice:**  
-Even if extraction is not perfect, ensure:
-- Upload works,
-- Metadata saved,
-- Student can see uploaded list.
+- [Features](#-features)
+- [System Architecture](#-system-architecture)
+- [Tech Stack](#-tech-stack)
+- [Prerequisites](#-prerequisites)
+- [Installation](#-installation)
+- [Configuration](#-configuration)
+- [Usage](#-usage)
+- [API Documentation](#-api-documentation)
+- [Workflows](#-workflows)
+- [Project Structure](#-project-structure)
+- [Contributing](#-contributing)
+- [License](#-license)
 
 ---
 
-### Part 2: Intelligent Search Engine (Semantic/RAG Search)
+## ✨ Features
 
-**Goal:** Student asks: “Explain Dijkstra’s algorithm in context of our lab” and gets relevant docs/snippets.
+### 🎯 Core Features
 
-- **Pipeline for a user query:**
-  1. Take natural language query.
-  2. Compute query **embedding**.
-  3. Search vector DB (top‑k chunks).
-  4. Return:
-     - list of chunks (with highlight),
-     - link to original material,
-     - type label (`theory` / `lab` / `code`).
-- **For the UI:**
-  - Search bar.
-  - Filter chips: Theory / Lab / Code / Week.
-  - Show:
-    - **Snippet text**,
-    - Material title,
-    - Type (Theory/Lab),
-    - Link to open full material.
+#### 1️⃣ **Content Management System (CMS)**
+- 📤 **Admin Upload**: Upload course materials (PDF, PPTX, DOCX, code files)
+- 🏷️ **Rich Metadata**: Categorize by Theory/Lab, week, topic, tags, programming language
+- 📁 **Cloud Storage**: R2 bucket integration for scalable file storage
+- 🔍 **Material Browser**: Filter and search by category, week, topic
+- 📊 **Analytics**: Track view count, download count, and engagement metrics
 
-**Bonus (structure-aware code search):**
-- Store extra metadata for code chunks:
-  - `language`, `function_name`, `file_path`.
-- In query → optionally bias search to `chunk_type='code'` for lab queries.
+#### 2️⃣ **Intelligent Parsing Pipeline**
+- 🧠 **LlamaIndex Integration**: Multi-modal content detection
+  - 🖼️ Images with captions and alt text
+  - 📊 Tables with structure preservation
+  - 📐 Mathematical formulas (LaTeX)
+  - 📝 Text (headings, paragraphs, code blocks)
+  - 📈 Diagrams and flowcharts
+- 📄 **Markdown Conversion**: Unified format for all content types
+- ✂️ **Intelligent Chunking**: 1000 chars with 25% overlap for context preservation
+- 🔢 **Vector Embeddings**: OpenAI text-embedding-3-small (1536D)
+- 🗄️ **Vector Storage**: Pinecone indexing with metadata
 
----
+#### 3️⃣ **RAG-Powered Chat**
+- 💬 **Conversational Interface**: Natural language queries
+- 🔎 **Semantic Search**: Pinecone vector similarity search
+- 🎯 **Context-Aware**: Filters by course, week, topic
+- 📚 **Grounded Responses**: Citations from source materials
+- 🤖 **Claude Sonnet 4.5**: High-quality LLM responses
 
-### Part 3: AI-Generated Learning Materials
+#### 4️⃣ **AI Content Generation**
+- 📝 **Theory Materials**: Reading notes, study guides, summaries
+- 💻 **Lab Materials**: Code snippets, explanations, templates
+- 🌐 **Hybrid Context**:
+  - **Internal**: RAG search in course materials (Pinecone)
+  - **External**: Gemini Google Search integration
+- 🎨 **Structured Output**: JSON schema for consistent formatting
+- 📥 **Multi-Format Export**: PDF (jsPDF) and Markdown
 
-**Goal:** Generate **course-specific** notes, slides, and code helpers using RAG + maybe Wikipedia.
-
-- **Core RAG generation flow:**
-  1. User request: “Give me reading notes on Week 3: Binary Search Trees.”
-  2. Use **course RAG**:
-     - Search top chunks for week/topic.
-  3. Build prompt:
-     - System: “You are a TA for this course. Only answer using provided context. If something is not covered, say you don’t know.”
-     - Context: top chunks (with citation IDs).
-     - Instruction: “Generate concise reading notes for a student, structured by headings.”
-  4. LLM returns **notes**.
-- **External context via MCP server (e.g., Wikipedia):**
-  - When the user explicitly asks for background or when your RAG confidence is low:
-    - Call Wikipedia tool for the specific term,
-    - Inject summary into context *but still prioritize course materials*.
-- **Theory outputs:**
-  - Text notes.
-  - Optionally: generate slide outline (e.g., bullet points per slide).
-- **Lab outputs:**
-  - Code templates,
-  - Example solutions,
-  - Step‑by‑step explanations referencing actual lab files.
-
----
-
-### Part 4: Content Validation & Evaluation
-
-**Goal:** Convince judges you are **not hallucinating randomly**.
-
-#### 4.1 Grounding & Reference Checking (for all answers)
-
-- For each generated answer:
-  - Attach **citations** (references to your retrieved chunks).
-  - Display: “Based on: Lecture 3 slides, Lab 2 code `sorting.py`”.
-- Basic **relevance check**:
-  - After generation, run another LLM call:
-    - “Given this answer and these retrieved sources, is the answer consistent and fully grounded? If not, explain issues.”
-  - If not grounded → either:
-    - warn the user (“Some parts may not be fully supported”), or
-    - regenerate with stricter prompt (“Don’t invent; if unsure say you don’t know”).
-
-#### 4.2 Code validation
-
-- **Syntax/lint check**:
-  - For generated code,
-    - Run language-specific syntax check (e.g., `python -m py_compile`, simple `tsc`, `eslint`).
-  - If syntax fails:
-    - Show error + attempt auto‑fix with a mini LLM repair step.
-- **Automated tests (if possible):**
-  - Prepare **a few small unit tests** for lab tasks:
-    - Example: if lab is about “matrix multiplication”, build a test that checks result equality for sample inputs.
-  - When code is generated or uploaded:
-    - Run those tests,
-    - Show pass/fail as part of validation.
-
-#### 4.3 Rubric-based evaluation (for explanations/notes)
-
-- Design a **simple rubric**:
-  - Correctness,
-  - Relevance to course,
-  - Coverage of key points,
-  - Clarity.
-- Have the LLM self‑evaluate answer on this rubric with numeric scores (e.g., 1–5) and short justification.
-- Display to user:
-  - “AI’s own confidence: 4.5/5 correctness; 4/5 coverage.”
-- Judges love this type of **self‑auditing**.
+#### 5️⃣ **Automatic Validation**
+- ✅ **Quality Scoring**:
+  - Accuracy Score (0-10)
+  - Clarity Score (0-10)
+  - Confidence Score (0-10)
+- 📊 **Detailed Evaluation**:
+  - Strengths analysis
+  - Weaknesses identification
+  - Improvement suggestions
+  - Explanation (2-3 paragraphs)
+- 🔧 **Code Validation**: Syntax checking via Piston API
+- 🧪 **Test Execution**: Automated test case validation
 
 ---
 
-### Part 5: Conversational Chat Interface
+## 🏗️ System Architecture
 
-**Goal:** One unified chat where:
-- You can search,
-- Summarize,
-- Generate notes,
-- Ask about lab code,
-- All with context & history.
-
-**Chat backend logic:**
-
-1. Every incoming message:
-   - Classify intent (lightweight heuristic or LLM classification):
-     - “search materials”,
-     - “summarize content”,
-     - “generate notes”,
-     - “help with lab code”.
-2. For each intent:
-   - Use appropriate tools:
-     - Intent “search” → run semantic search, summarize results.
-     - Intent “notes” → call RAG generation as above.
-     - Intent “lab help” → restrict retrieval to `lab` + `code` chunks.
-3. Maintain **conversation memory**:
-   - Store last N turns (e.g., 10) in DB or session.
-   - When answering, include short conversation summary or previous important Q/A in the prompt.
-4. UI:
-   - Left: message bubbles (user vs AI).
-   - Right or bottom:
-     - collapsible “Sources” panel showing:
-       - Titles of materials used,
-       - snippet previews.
+```mermaid
+graph TB
+    Client[Next.js Frontend] --> API[Express Backend]
+    API --> DB[(PostgreSQL)]
+    API --> Vector[(Pinecone Vector DB)]
+    API --> Storage[R2 Bucket]
+    API --> LLM1[OpenAI GPT-4]
+    API --> LLM2[Claude Sonnet 4.5]
+    API --> LLM3[Gemini 2.5 Flash]
+    API --> Parser[LlamaIndex Cloud]
+    
+    style Client fill:#e3f2fd
+    style API fill:#fff3e0
+    style DB fill:#c8e6c9
+    style Vector fill:#f3e5f5
+    style Storage fill:#fff9c4
+```
 
 ---
 
+## 🛠️ Tech Stack
+
+### Frontend
+- **Framework**: Next.js 16.1.5 (React 19.2.3)
+- **Styling**: Tailwind CSS + shadcn/ui
+- **State**: React Hooks + Context API
+- **PDF Generation**: jsPDF
+- **Auth**: JWT with HTTP-only cookies
+
+### Backend
+- **Runtime**: Node.js with TypeScript
+- **Framework**: Express.js 4.21
+- **ORM**: Drizzle ORM
+- **Database**: PostgreSQL (Neon)
+- **Vector DB**: Pinecone
+- **File Upload**: Multer + Formidable
+- **Storage**: Cloudflare R2 / Cloudinary
+
+### AI & ML
+- **Embeddings**: OpenAI text-embedding-3-small/large
+- **LLMs**:
+  - Claude Sonnet 4.5 (chat, generation)
+  - Gemini 2.5 Flash (validation, Google Search)
+  - OpenAI GPT-4 (fallback)
+- **Parsing**: LlamaIndex Cloud (LlamaParse)
+- **Orchestration**: LangChain
+- **Code Execution**: Piston API
+
+---
+
+## 📦 Prerequisites
+
+- **Node.js**: v20+ 
+- **pnpm**: v10+
+- **PostgreSQL**: Database (Neon recommended)
+- **API Keys**:
+  - OpenAI API Key
+  - Anthropic API Key (Claude)
+  - Google AI API Key (Gemini)
+  - Pinecone API Key
+  - LlamaCloud API Key
+  - Cloudinary/R2 credentials
+
+---
+
+## 🚀 Installation
+
+### 1. Clone Repository
+
+```bash
+git clone <repository-url>
+cd buet-final-round
+```
+
+### 2. Install Dependencies
+
+```bash
+# Install backend dependencies
+cd server/backend
+pnpm install
+
+# Install frontend dependencies
+cd ../../client
+pnpm install
+```
+
+### 3. Environment Configuration
+
+Create `.env` files in both `server/backend` and `client` directories:
+
+#### Backend `.env`
+
+```env
+# Database
+DATABASE_URL=postgresql://user:password@host/database?sslmode=require
+
+# JWT
+JWT_SECRET=your-secret-key-min-32-chars
+
+# OpenAI
+OPENAI_API_KEY=sk-...
+
+# Anthropic Claude
+ANTHROPIC_API_KEY=sk-ant-...
+
+# Google Gemini
+GEMINI_API_KEY=...
+
+# Pinecone
+PINECONE_API_KEY=...
+PINECONE_INDEX_NAME=course-materials
+
+# LlamaCloud
+LLAMA_CLOUD_API_KEY=llx-...
+
+# Storage (Cloudinary)
+CLOUDINARY_CLOUD_NAME=...
+CLOUDINARY_API_KEY=...
+CLOUDINARY_API_SECRET=...
+
+# OR R2 Bucket
+BUCKET_NAME=your-bucket
+PUBLIC_ACCESS_URL=https://your-bucket-url
+R2_ACCOUNT_ID=...
+R2_ACCESS_KEY_ID=...
+R2_SECRET_ACCESS_KEY=...
+
+# Piston API (Code Execution)
+PISTON_API_URL=https://emkc.org/api/v2/piston
+
+# Server
+PORT=8000
+NODE_ENV=development
+```
+
+#### Frontend `.env.local`
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+
+### 4. Database Setup
+
+```bash
+cd server/backend
+
+# Generate database schema
+pnpm db:generate
+
+# Push schema to database
+pnpm db:push
+
+# (Optional) Open Drizzle Studio
+pnpm db:studio
+```
+
+---
+
+## 🎮 Usage
+
+### Development Mode
+
+```bash
+# Terminal 1: Start backend
+cd server/backend
+pnpm dev
+
+# Terminal 2: Start frontend
+cd client
+pnpm dev
+```
+
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8000
+- **API Docs**: http://localhost:8000/api/docs
+
+### Production Build
+
+```bash
+# Backend
+cd server/backend
+pnpm build
+pnpm start
+
+# Frontend
+cd client
+pnpm build
+pnpm start
+```
+
+---
+
+## 📚 API Documentation
+
+### Authentication
+
+```bash
+# Sign up
+POST /api/auth/signup
+Body: { email, password, full_name, role: "admin" | "student" }
+
+# Login
+POST /api/auth/login
+Body: { email, password }
+
+# Get current user
+GET /api/auth/me
+Headers: Authorization: Bearer <token>
+```
+
+### Courses
+
+```bash
+# Create course (Admin)
+POST /api/courses
+Body: { name, code, description, semester, year, has_theory, has_lab }
+
+# Get all courses
+GET /api/courses
+
+# Get course by ID
+GET /api/courses/:id
+```
+
+### Materials
+
+```bash
+# Upload material (Admin)
+POST /api/materials/upload
+Content-Type: multipart/form-data
+Body: file, course_id, title, description, category, content_type, week_number, topic, tags
+
+# Get materials
+GET /api/materials?course_id=&category=theory|lab&week_number=
+
+# Parse material
+POST /api/materials/parse
+Body: { material_id, file_url }
+```
+
+### RAG Chat
+
+```bash
+# Send message
+POST /api/rag/chat
+Body: { course_id, message, conversation_id? }
+```
+
+### Content Generation
+
+```bash
+# Generate enhanced content
+POST /api/content/generate-enhanced
+Body: { course_id, user_prompt }
+
+# Generate PDF
+POST /api/content/generate-pdf
+Body: { course_id, user_prompt }
+```
+
+### Validation
+
+```bash
+# Validate text
+POST /api/validation/validate-text
+Body: { content, context }
+
+# Validate code
+POST /api/validation/validate-code
+Body: { code, language, test_cases? }
+```
+
+---
+
+## 🔄 Workflows
+
+### Material Upload & Processing
+
+```mermaid
+graph LR
+    A[Admin Upload] --> B[Store in R2]
+    B --> C[Save Metadata to PostgreSQL]
+    C --> D[Trigger Parser]
+    D --> E[LlamaIndex Extract]
+    E --> F[Convert to Markdown]
+    F --> G[Chunk with 25% Overlap]
+    G --> H[Generate Embeddings]
+    H --> I[Store in Pinecone]
+```
+
+### RAG Chat Flow
+
+```mermaid
+graph LR
+    A[Student Query] --> B[Embed Question]
+    B --> C[Search Pinecone]
+    C --> D[Filter by Course]
+    D --> E[Top 5 Chunks]
+    E --> F[Claude Sonnet]
+    F --> G[Response + Citations]
+```
+
+### Content Generation
+
+```mermaid
+graph LR
+    A[User Prompt] --> B[Parallel Search]
+    B --> C[Internal: Pinecone]
+    B --> D[External: Google]
+    C --> E[Merge Contexts]
+    D --> E
+    E --> F[Gemini Generate]
+    F --> G[Auto Validation]
+    G --> H[Display + Export]
+```
+
+---
+
+## 📁 Project Structure
+
+```
+buet-final-round/
+├── client/                 # Next.js frontend
+│   ├── app/               # App router pages
+│   │   ├── auth/         # Authentication pages
+│   │   ├── dashboard/    # Main dashboard
+│   │   └── courses/      # Course pages
+│   ├── components/        # React components
+│   │   ├── ui/           # shadcn/ui components
+│   │   ├── auth/         # Auth components
+│   │   └── chatbot/      # Chat interface
+│   └── lib/              # Utilities & API clients
+│
+├── server/backend/        # Express backend
+│   ├── src/
+│   │   ├── controllers/  # Route handlers
+│   │   ├── routes/       # API routes
+│   │   ├── middleware/   # Auth, upload, etc.
+│   │   ├── db/          # Database schema
+│   │   └── utils/       # Helper functions
+│   └── drizzle/         # Database migrations
+│
+└── README.md
+```
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add AmazingFeature'`)
+4. Push to branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+This project is licensed under the ISC License.
+
+---
+
+## 👥 Team
+
+Built with ❤️ for BUET CSE Fest 2026 Hackathon
+
+---
+
+## 🙏 Acknowledgments
+
+- [LlamaIndex](https://www.llamaindex.ai/) for intelligent parsing
+- [Pinecone](https://www.pinecone.io/) for vector database
+- [OpenAI](https://openai.com/), [Anthropic](https://www.anthropic.com/), [Google AI](https://ai.google/) for LLM APIs
+- [shadcn/ui](https://ui.shadcn.com/) for beautiful UI components
+- [Neon](https://neon.tech/) for serverless PostgreSQL
+
+---
