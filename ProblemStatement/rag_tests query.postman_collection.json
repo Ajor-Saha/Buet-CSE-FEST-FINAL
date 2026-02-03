@@ -1,0 +1,297 @@
+{
+  "info": {
+    "name": "Refined RAG Benchmark - Chat Interface",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Comprehensive benchmarking for the AI-Powered Supplementary Learning Platform using the refined PDF benchmark."
+  },
+  "item": [
+    {
+      "name": "01 - Requirements for Climate Pipeline",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/api/rag/chat", "host": ["{{base_url}}"], "path": ["api", "rag", "chat"] },
+        "body": { "mode": "raw", "raw": "{\n  \"question\": \"What are the first-class requirements for the Climate Data Processing Pipeline deployment?\",\n  \"top_k\": 5\n}" }
+      }
+    },
+    {
+      "name": "02 - Run-2 Accuracy Section 1",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/api/rag/chat", "host": ["{{base_url}}"], "path": ["api", "rag", "chat"] },
+        "body": { "mode": "raw", "raw": "{\n  \"question\": \"In Section 1, what was the accuracy achieved in Run-2?\",\n  \"top_k\": 5\n}" }
+      }
+    },
+    {
+      "name": "03 - Run-4 Latency Section 1",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/api/rag/chat", "host": ["{{base_url}}"], "path": ["api", "rag", "chat"] },
+        "body": { "mode": "raw", "raw": "{\n  \"question\": \"What is the latency in milliseconds for Run-4 of the Climate Data Processing Pipeline?\",\n  \"top_k\": 5\n}" }
+      }
+    },
+    {
+      "name": "04 - Section 1 Pipeline Stages",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/api/rag/chat", "host": ["{{base_url}}"], "path": ["api", "rag", "chat"] },
+        "body": { "mode": "raw", "raw": "{\n  \"question\": \"List the stages included in the Climate Data Processing Pipeline.\",\n  \"top_k\": 5\n}" }
+      }
+    },
+    {
+      "name": "05 - Section 2 System Design",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/api/rag/chat", "host": ["{{base_url}}"], "path": ["api", "rag", "chat"] },
+        "body": { "mode": "raw", "raw": "{\n  \"question\": \"What system design is discussed in Section 2?\",\n  \"top_k\": 5\n}" }
+      }
+    },
+    {
+      "name": "06 - Run-4 Accuracy Section 2",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/api/rag/chat", "host": ["{{base_url}}"], "path": ["api", "rag", "chat"] },
+        "body": { "mode": "raw", "raw": "{\n  \"question\": \"In the E-commerce recommendation experiments, what was the accuracy of the optimized Run-4?\",\n  \"top_k\": 5\n}" }
+      }
+    },
+    {
+      "name": "07 - Run-1 Accuracy Section 2",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/api/rag/chat", "host": ["{{base_url}}"], "path": ["api", "rag", "chat"] },
+        "body": { "mode": "raw", "raw": "{\n  \"question\": \"What was the baseline accuracy for Run-1 in Section 2?\",\n  \"top_k\": 5\n}" }
+      }
+    },
+    {
+      "name": "08 - Run-5 Latency Section 2",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/api/rag/chat", "host": ["{{base_url}}"], "path": ["api", "rag", "chat"] },
+        "body": { "mode": "raw", "raw": "{\n  \"question\": \"What is the latency for Run-5 in the E-commerce Recommendation results table?\",\n  \"top_k\": 5\n}" }
+      }
+    },
+    {
+      "name": "09 - Section 3 Workflow",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/api/rag/chat", "host": ["{{base_url}}"], "path": ["api", "rag", "chat"] },
+        "body": { "mode": "raw", "raw": "{\n  \"question\": \"What specific workflow is discussed in Section 3?\",\n  \"top_k\": 5\n}" }
+      }
+    },
+    {
+      "name": "10 - Run-4 Latency Section 3",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/api/rag/chat", "host": ["{{base_url}}"], "path": ["api", "rag", "chat"] },
+        "body": { "mode": "raw", "raw": "{\n  \"question\": \"In the Medical Image Segmentation results, what is the latency of Run-4?\",\n  \"top_k\": 5\n}" }
+      }
+    },
+    {
+      "name": "11 - Run-3 Accuracy Section 3",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/api/rag/chat", "host": ["{{base_url}}"], "path": ["api", "rag", "chat"] },
+        "body": { "mode": "raw", "raw": "{\n  \"question\": \"What was the accuracy for the optimized Run-3 in Section 3?\",\n  \"top_k\": 5\n}" }
+      }
+    },
+    {
+      "name": "12 - Run-2 Latency Section 3",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/api/rag/chat", "host": ["{{base_url}}"], "path": ["api", "rag", "chat"] },
+        "body": { "mode": "raw", "raw": "{\n  \"question\": \"In Section 3, what is the latency for the baseline Run-2?\",\n  \"top_k\": 5\n}" }
+      }
+    },
+    {
+      "name": "13 - Section 4 System Design",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/api/rag/chat", "host": ["{{base_url}}"], "path": ["api", "rag", "chat"] },
+        "body": { "mode": "raw", "raw": "{\n  \"question\": \"Which model is Section 4 discussing the system design for?\",\n  \"top_k\": 5\n}" }
+      }
+    },
+    {
+      "name": "14 - Run-4 Accuracy Section 4",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/api/rag/chat", "host": ["{{base_url}}"], "path": ["api", "rag", "chat"] },
+        "body": { "mode": "raw", "raw": "{\n  \"question\": \"What is the accuracy for Run-4 in the Financial Fraud Detection results?\",\n  \"top_k\": 5\n}" }
+      }
+    },
+    {
+      "name": "15 - Run-2 Accuracy Section 4",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/api/rag/chat", "host": ["{{base_url}}"], "path": ["api", "rag", "chat"] },
+        "body": { "mode": "raw", "raw": "{\n  \"question\": \"What accuracy did Run-2 achieve with augmentation in Section 4?\",\n  \"top_k\": 5\n}" }
+      }
+    },
+    {
+      "name": "16 - Run-5 Note Section 4",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/api/rag/chat", "host": ["{{base_url}}"], "path": ["api", "rag", "chat"] },
+        "body": { "mode": "raw", "raw": "{\n  \"question\": \"What is the note provided for Run-5 in the Financial Fraud Detection table?\",\n  \"top_k\": 5\n}" }
+      }
+    },
+    {
+      "name": "17 - Section 5 System Design",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/api/rag/chat", "host": ["{{base_url}}"], "path": ["api", "rag", "chat"] },
+        "body": { "mode": "raw", "raw": "{\n  \"question\": \"What system design is discussed in Section 5?\",\n  \"top_k\": 5\n}" }
+      }
+    },
+    {
+      "name": "18 - Run-1 Accuracy Section 5",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/api/rag/chat", "host": ["{{base_url}}"], "path": ["api", "rag", "chat"] },
+        "body": { "mode": "raw", "raw": "{\n  \"question\": \"In the Autonomous Vehicle Sensor Fusion results, what accuracy was achieved in Run-1?\",\n  \"top_k\": 5\n}" }
+      }
+    },
+    {
+      "name": "19 - Run-4 Latency Section 5",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/api/rag/chat", "host": ["{{base_url}}"], "path": ["api", "rag", "chat"] },
+        "body": { "mode": "raw", "raw": "{\n  \"question\": \"What is the latency of the optimized Run-4 in Section 5?\",\n  \"top_k\": 5\n}" }
+      }
+    },
+    {
+      "name": "20 - Run-3 Note Section 5",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/api/rag/chat", "host": ["{{base_url}}"], "path": ["api", "rag", "chat"] },
+        "body": { "mode": "raw", "raw": "{\n  \"question\": \"What is the note for Run-3 in the Section 5 Experimental Results?\",\n  \"top_k\": 5\n}" }
+      }
+    },
+    {
+      "name": "21 - Failure Mode Mitigation",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/api/rag/chat", "host": ["{{base_url}}"], "path": ["api", "rag", "chat"] },
+        "body": { "mode": "raw", "raw": "{\n  \"question\": \"What is proposed for the various failure modes analyzed in the document?\",\n  \"top_k\": 5\n}" }
+      }
+    },
+    {
+      "name": "22 - Evaluation Metrics Commonality",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/api/rag/chat", "host": ["{{base_url}}"], "path": ["api", "rag", "chat"] },
+        "body": { "mode": "raw", "raw": "{\n  \"question\": \"What four metrics are consistently used for evaluation across all sections?\",\n  \"top_k\": 5\n}" }
+      }
+    },
+    {
+      "name": "23 - Run-2 Note Section 1",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/api/rag/chat", "host": ["{{base_url}}"], "path": ["api", "rag", "chat"] },
+        "body": { "mode": "raw", "raw": "{\n  \"question\": \"What is the note for Run-2 in the Climate Data Processing table?\",\n  \"top_k\": 5\n}" }
+      }
+    },
+    {
+      "name": "24 - Run-3 Accuracy Section 2",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/api/rag/chat", "host": ["{{base_url}}"], "path": ["api", "rag", "chat"] },
+        "body": { "mode": "raw", "raw": "{\n  \"question\": \"What was the accuracy of Run-3 in the E-commerce Recommendation Systems results?\",\n  \"top_k\": 5\n}" }
+      }
+    },
+    {
+      "name": "25 - Run-1 Latency Section 3",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/api/rag/chat", "host": ["{{base_url}}"], "path": ["api", "rag", "chat"] },
+        "body": { "mode": "raw", "raw": "{\n  \"question\": \"In the Medical Image Segmentation experiments, what is the latency of Run-1?\",\n  \"top_k\": 5\n}" }
+      }
+    },
+    {
+      "name": "26 - Run-3 Note Section 4",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/api/rag/chat", "host": ["{{base_url}}"], "path": ["api", "rag", "chat"] },
+        "body": { "mode": "raw", "raw": "{\n  \"question\": \"In Section 4, what is the note provided for Run-3?\",\n  \"top_k\": 5\n}" }
+      }
+    },
+    {
+      "name": "27 - Run-5 Accuracy Section 5",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/api/rag/chat", "host": ["{{base_url}}"], "path": ["api", "rag", "chat"] },
+        "body": { "mode": "raw", "raw": "{\n  \"question\": \"What is the accuracy for Run-5 in the sensor fusion results?\",\n  \"top_k\": 5\n}" }
+      }
+    },
+    {
+      "name": "28 - Deployment Architecture Requirements",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/api/rag/chat", "host": ["{{base_url}}"], "path": ["api", "rag", "chat"] },
+        "body": { "mode": "raw", "raw": "{\n  \"question\": \"Which two factors are considered first-class requirements in the deployment architectures mentioned throughout the document?\",\n  \"top_k\": 5\n}" }
+      }
+    },
+    {
+      "name": "29 - Run-1 Accuracy Section 4",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/api/rag/chat", "host": ["{{base_url}}"], "path": ["api", "rag", "chat"] },
+        "body": { "mode": "raw", "raw": "{\n  \"question\": \"What was the accuracy for Run-1 in Section 4?\",\n  \"top_k\": 5\n}" }
+      }
+    },
+    {
+      "name": "30 - Section 5 Pipeline Stages",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/api/rag/chat", "host": ["{{base_url}}"], "path": ["api", "rag", "chat"] },
+        "body": { "mode": "raw", "raw": "{\n  \"question\": \"What four stages are included in the Autonomous Vehicle Sensor Fusion pipeline?\",\n  \"top_k\": 5\n}" }
+      }
+    },
+    {
+      "name": "31 - Production Suitability Section 1",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/api/rag/chat", "host": ["{{base_url}}"], "path": ["api", "rag", "chat"] },
+        "body": { "mode": "raw", "raw": "{\n  \"question\": \"What do the results indicate about the suitability of the Climate Data Processing Pipeline approach?\",\n  \"top_k\": 5\n}" }
+      }
+    },
+    {
+      "name": "32 - Section 2 System Design Extended",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/api/rag/chat", "host": ["{{base_url}}"], "path": ["api", "rag", "chat"] },
+        "body": { "mode": "raw", "raw": "{\n  \"question\": \"What is discussed in the extended discussion part of Section 2?\",\n  \"top_k\": 5\n}" }
+      }
+    }
+  ]
+}
