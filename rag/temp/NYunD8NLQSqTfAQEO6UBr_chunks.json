@@ -1,0 +1,33 @@
+{
+  "paper_id": 1,
+  "filename": "NYunD8NLQSqTfAQEO6UBr.pdf",
+  "metadata": {
+    "title": "Database System Concepts, 7thEd.",
+    "authors": "©Silberschatz, Korth and Sudarshan",
+    "year": null,
+    "pages": 5
+  },
+  "chunks": [
+    {
+      "text": "Database System Concepts, 7thEd. ©Silberschatz, Korth and Sudarshan See www.db -book.com for conditions on re -use Chapter 3: Introduction to SQL ©Silberschatz, Korth and Sudarshan 3.2 Database System Concepts - 7thEdition Outline Overview of The SQL Query Language SQL Data Definition Basic Query Structure of SQL Queries Additional Basic Operations Set Operations Null Values Aggregate Functions Nested Subqueries Modification of the Database ©Silberschatz, Korth and Sudarshan 3.3 Database System Concepts - 7thEdition History IBM Sequel language developed as part of System R project at the IBM San Jose Research Laboratory Renamed Structured Query Language (SQL) ANSI and ISO standard SQL: •SQL-86 •SQL-89 •SQL-92 •SQL:1999 (language name became Y2K compliant!) •SQL:2003 Commercial systems offer most, if not all, SQL- 92 features, plus varying feature sets from later standards and special proprietary features. •Not all examples here may work on your particular system.",
+      "section": "Unknown",
+      "page_start": 1,
+      "page_end": 3,
+      "chunk_index": 0
+    },
+    {
+      "text": "feature sets from later standards and special proprietary features. •Not all examples here may work on your particular system. ©Silberschatz, Korth and Sudarshan 3.4 Database System Concepts - 7thEdition SQL Parts DML --provides the ability to query information from the database and to insert tuples into, delete tuples from, and modify tuples in the database. integrity –the  DDL includes commands for specifying integrity constraints. View definition --The DDL  includes commands for defining views. Transaction control –includes commands for specifying the beginning and ending of transactions. Embedded  SQL  and dynamic SQL -- define how SQL statements can be embedded within general -purpose programming languages. Authorization –includes commands for specifying access rights to relations and views. ©Silberschatz, Korth and Sudarshan 3.5 Database System Concepts - 7thEdition Data Definition Language The schema for each relation. The type of values associated with each attribute.",
+      "section": "Unknown",
+      "page_start": 3,
+      "page_end": 5,
+      "chunk_index": 1
+    },
+    {
+      "text": "Data Definition Language The schema for each relation. The type of values associated with each attribute. The Integrity constraints The set of indices to be maintained for each relation. Security and authorization information for each relation. The physical storage structure of each relation on disk.The SQL data- definition language (DDL) allows the specification of information about relations, including:",
+      "section": "Unknown",
+      "page_start": 5,
+      "page_end": 5,
+      "chunk_index": 2
+    }
+  ]
+}
