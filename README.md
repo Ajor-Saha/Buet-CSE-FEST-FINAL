@@ -1,210 +1,415 @@
+# Intelligent Learning Companion Platform
+### BUET CSE Fest 2026 Hackathon (AI & API) - Team CodeOverclock
 
+## 📺 Demonstration Video
 
-## Recommended Strategy for the Hackathon
+<p align="center">
+    <a href="https://www.youtube.com/watch?v=GPdAra2zaCQ">
+        <img src="ProblemStatement/Thumbnail.png" alt="Watch Demo" width="800" />
+    </a>
+</p>
 
-### 1. Decide Scope & Tech Stack Upfront 
-
-- **Backend**:  
-  - **Option 1 (Python)**: `FastAPI` (easy for AI/RAG, rich ecosystem).  
-  - **Option 2 (JS/TS)**: `Node + Express` or `Next.js` (API routes + frontend together).
-- **Frontend**:
-  - React (or Next.js pages) with:
-    - `Admin` view (upload, tag content).
-    - `Student` view (browse, search, chat).
-- **Database**:
-  - Relational DB: PostgreSQL / MySQL / even SQLite for demo.
-  - Tables for: `Courses`, `Materials`, `Chunks`, `Users` (if needed).
-- **Vector Search**:
-  - Easiest:
-    - Use a **hosted/vector solution** (e.g., Qdrant Cloud, Pinecone) if allowed,
-    - or **pgvector** inside Postgres,
-    - or a simple local vector DB.
-- **LLM**:
-  - Use whichever hosted LLM you can (OpenAI, local model, etc.) with:
-    - **RAG pipeline** using your course chunks.
-- **File storage**:
-  - For hackathon: store files **locally in a folder** and store only *paths+metadata* in DB.
-
-You **don’t** need to innovate on infra; your innovation is in **workflow + UX + validation**.
+## 👥 Team Members
+- **Sanjoy Das**
+- **Md Ahasanul Haque Sazid**
+- **Ajor Saha**
 
 ---
 
-## 2. Split the Work Into Vertical Slices (By Features)
+## 📋 Problem Statement
 
-Instead of “backend team” vs “frontend team”, organize around **features**, so each slice can be demoed independently:
+Develop an **AI-Powered Supplementary Learning Platform for University Courses** that addresses the challenges students face in accessing and understanding course materials. The platform should:
 
-1. **Content Ingestion & Browsing (CMS + student browse)**  
-2. **Semantic Search (RAG retrieval)**  
-3. **AI Material Generation (notes, code snippets)**  
-4. **Validation & Evaluation (grounding, syntax/tests)**  
-5. **Chat Interface (unified access layer)**  
+- **Content Management System**: Allow instructors to upload and organize course materials (PDFs, slides, code files)
+- **Intelligent Search Engine**: Implement semantic search with RAG to help students find relevant content quickly
+- **AI-Generated Learning Materials**: Generate course-specific notes, summaries, and code examples
+- **Content Validation & Evaluation**: Ensure accuracy of AI-generated content through grounding checks and automated testing
+- **Conversational Interface**: Provide a unified chat interface for students to interact with course materials
 
-Each slice should go *from DB → backend → UI → quick demo* as soon as possible.
-
----
-
-## 3. Detailed Plan By Competition Parts
-
-### Part 1: Content Management System (CMS)
-
-**Goal:** Admin uploads materials; they become searchable & browsable.
-
-- **Data model (minimum):**
-  - `Material`: `id`, `title`, `course`, `week`, `topic`, `type` (`theory`/`lab`), `tags`, `file_path`.
-  - `Chunk`: `id`, `material_id`, `chunk_text`, `chunk_type` (`slide_text`, `code`, `pdf_text`), `embedding`.
-- **Admin flow:**
-  - Simple web form:
-    - Upload file.
-    - Select: **Theory/Lab**, **Week**, **Topic**, tags.
-  - Backend:
-    - Save file to disk.
-    - Extract text:
-      - PDFs/slides: use a standard parser.
-      - Code: read as text.
-    - Chunk content (e.g., ~500 tokens per chunk).
-    - Compute embeddings and store in vector DB linked to `material_id`.
-- **Student browse:**
-  - Filter by `week`, `topic`, `Theory/Lab`, `file type`.
-  - Show list of materials; clicking shows preview or link to file.
-
-**Hackathon advice:**  
-Even if extraction is not perfect, ensure:
-- Upload works,
-- Metadata saved,
-- Student can see uploaded list.
+For complete problem statement, see: [Problem Statement PDF](ProblemStatement/problem_statement%20AI-API.pdf)
 
 ---
 
-### Part 2: Intelligent Search Engine (Semantic/RAG Search)
+## 🎯 Solution Overview
 
-**Goal:** Student asks: “Explain Dijkstra’s algorithm in context of our lab” and gets relevant docs/snippets.
+The **Intelligent Learning Companion Platform** is an AI-powered educational system designed to revolutionize how students and educators interact with course materials. The platform brings all course materials into one organized, easy-to-access space, with intelligent features for content generation, validation, and interactive learning.
 
-- **Pipeline for a user query:**
-  1. Take natural language query.
-  2. Compute query **embedding**.
-  3. Search vector DB (top‑k chunks).
-  4. Return:
-     - list of chunks (with highlight),
-     - link to original material,
-     - type label (`theory` / `lab` / `code`).
-- **For the UI:**
-  - Search bar.
-  - Filter chips: Theory / Lab / Code / Week.
-  - Show:
-    - **Snippet text**,
-    - Material title,
-    - Type (Theory/Lab),
-    - Link to open full material.
+### Key Innovations
 
-**Bonus (structure-aware code search):**
-- Store extra metadata for code chunks:
-  - `language`, `function_name`, `file_path`.
-- In query → optionally bias search to `chunk_type='code'` for lab queries.
+1. **Advanced Multimodal RAG System** - Goes beyond traditional text-based RAG by intelligently preserving document structure
+2. **Automated Content Validation** - Comprehensive quality scoring with accuracy, clarity, and confidence metrics
+3. **Dual Search Architecture** - Combines semantic vector search with external knowledge sources
+4. **Course-Specific AI Assistant** - Context-aware chatbot that answers questions based on actual course materials
+5. **Code Execution Validation** - Validates generated code using Piston server for multiple programming languages
 
 ---
 
-### Part 3: AI-Generated Learning Materials
+## 🏗️ Architecture & Features
 
-**Goal:** Generate **course-specific** notes, slides, and code helpers using RAG + maybe Wikipedia.
+### 1. Content Management System (Admin)
 
-- **Core RAG generation flow:**
-  1. User request: “Give me reading notes on Week 3: Binary Search Trees.”
-  2. Use **course RAG**:
-     - Search top chunks for week/topic.
-  3. Build prompt:
-     - System: “You are a TA for this course. Only answer using provided context. If something is not covered, say you don’t know.”
-     - Context: top chunks (with citation IDs).
-     - Instruction: “Generate concise reading notes for a student, structured by headings.”
-  4. LLM returns **notes**.
-- **External context via MCP server (e.g., Wikipedia):**
-  - When the user explicitly asks for background or when your RAG confidence is low:
-    - Call Wikipedia tool for the specific term,
-    - Inject summary into context *but still prioritize course materials*.
-- **Theory outputs:**
-  - Text notes.
-  - Optionally: generate slide outline (e.g., bullet points per slide).
-- **Lab outputs:**
-  - Code templates,
-  - Example solutions,
-  - Step‑by‑step explanations referencing actual lab files.
+**Course Creation:**
+- Admins can create courses with complete metadata:
+  - Course code, name, semester, year
+  - Number of weeks
+  - Description and learning objectives
+  - Course components (Theory, Lab, or Both)
+
+**Material Upload Pipeline:**
+- Upload multiple file formats: PDFs, slides, documents, code files
+- Metadata tagging: title, material type, topics, week number
+- Real-time system logs for upload tracking
+- Automatic file processing through dual pipelines
+
+### 2. Advanced RAG Pipeline
+
+Traditional RAG systems simply dump PDFs into text, losing critical structure and context. Our solution implements **LlamaIndex Multimodal Parsing** for intelligent content extraction:
+
+**Dual Pipeline Architecture:**
+
+**Pipeline 1 - Storage:**
+- Raw files stored in S3/Auto bucket
+- Metadata indexed in PostgreSQL database
+- Fast retrieval and download capabilities
+
+**Pipeline 2 - RAG Processing:**
+```
+Document Upload
+    ↓
+Multimodal Parsing (LlamaIndex)
+    ├── Intelligent extraction of:
+    │   ├── Text content
+    │   ├── Images and diagrams
+    │   ├── Tables and data structures
+    │   └── Code blocks with syntax preservation
+    ↓
+Structured Markdown Conversion
+    ↓
+Intelligent Chunking (25% overlap)
+    ├── Preserves semantic meaning
+    └── Maintains context across boundaries
+    ↓
+Embedding Generation (OpenAI)
+    ↓
+Vector Database Indexing
+```
+
+**Why This Approach is Superior:**
+- Preserves document structure and formatting
+- Maintains relationships between text and visuals
+- Extracts code with proper syntax highlighting
+- Enables semantic search across different content types
+- Prevents loss of critical information during conversion
+
+### 3. AI-Powered Content Generation
+
+**Enhanced Content Generation:**
+
+Students can generate learning materials by:
+- Selecting "Enhanced Content" or "PDF Document" format
+- Providing relevant prompts about topics they want to learn
+- Receiving AI-generated structured content with sources
+
+**Backend Workflow:**
+```
+Student Prompt
+    ↓
+Prompt Enhancement (LLM)
+    ↓
+Dual Search Process:
+    ├── Internal Search:
+    │   ├── Embed enhanced prompt
+    │   ├── Semantic search in Vector DB
+    │   └── Pull top-K course material chunks
+    │
+    └── External Search:
+        ├── Google Search Tool
+        └── Relevant external content
+    ↓
+Content Merging & Deduplication
+    ↓
+LLM Generation (with source tracking)
+    ↓
+Structured Content Output
+    ├── Main content with headings
+    ├── Source attribution
+    └── Code snippets (if applicable)
+```
+
+**Lab Content Generation:**
+- Generates complete lab materials with explanations
+- Includes working code examples
+- Provides step-by-step instructions
+- Links to relevant theory concepts
+
+### 4. Automated Content Validation
+
+**Comprehensive Quality Metrics:**
+
+Every generated content includes:
+
+**Validation Scores:**
+- **Accuracy Score** - Factual correctness against source materials
+- **Clarity Score** - Readability and comprehension level
+- **Confidence Score** - System's certainty in the response
+- **Strength Assessment** - What the content does well
+- **Weakness Identification** - Areas for improvement
+
+**Code Validation (Piston Server Integration):**
+- Automatic syntax checking for generated code
+- Support for multiple programming languages
+- Runtime validation for executable code
+- Error detection and debugging suggestions
+
+**Validation Display:**
+```
+┌─────────────────────────────────────┐
+│ Validation Metrics                  │
+├─────────────────────────────────────┤
+│ Accuracy:    95% ████████████████░░ │
+│ Clarity:     92% ███████████████░░░ │
+│ Confidence:  88% ██████████████░░░░ │
+├─────────────────────────────────────┤
+│ ✓ Strengths                         │
+│ • Well-structured explanations      │
+│ • Accurate code examples            │
+│                                     │
+│ ⚠ Areas for Improvement             │
+│ • Add more visual examples          │
+└─────────────────────────────────────┘
+```
+
+### 5. Course-Specific AI Chatbot
+
+**Intelligent Course Assistant:**
+
+**Workflow:**
+```
+Student Question
+    ↓
+Query Analysis
+    ↓
+Semantic Search in Vector DB
+    ↓
+Retrieve Relevant Chunks
+    ├── From course materials
+    ├── From lecture slides
+    └── From lab documents
+    ↓
+Context Assembly
+    ↓
+LLM Response Generation
+    ├── Answer grounded in sources
+    └── Citation of specific materials
+    ↓
+Display Answer with Sources
+```
+
+**Advanced Capabilities:**
+- **Table Understanding** - Can extract and explain data from tables within PDFs
+- **Code Explanation** - Analyzes and explains code snippets from labs
+- **Cross-Reference** - Links related concepts across different materials
+- **Source Attribution** - Always shows which materials were used
+- **Context Preservation** - Maintains conversation history
+
+**Verified Accuracy:**
+- Successfully answers questions from complex tables in PDFs
+- Provides accurate code explanations from lab materials
+- Demonstrates proper RAG implementation with source verification
+
+### 6. Export and Download Features
+
+**Multiple Export Formats:**
+- **Markdown Export** - Structured markdown format for easy editing
+- **PDF Generation** - Professional PDF with validation report
+- **Raw Content Download** - Plain text format
+
+**Validation Report Included:**
+- All exports include comprehensive validation metrics
+- Quality scores visible in generated documents
+- Source citations maintained in all formats
+
+### 7. Student Features
+
+**Course Enrollment:**
+- Students can browse available courses
+- Enroll in courses created by admins
+- Access all materials for enrolled courses
+
+**Organized Content Access:**
+- Content categorized into Theory and Lab sections
+- Filter by week, topic, or material type
+- Search across all enrolled courses
+
+**Learning Tools:**
+- Generate custom study materials on-demand
+- Interactive chatbot for questions
+- Download materials for offline study
 
 ---
 
-### Part 4: Content Validation & Evaluation
+## 💡 Technical Highlights
 
-**Goal:** Convince judges you are **not hallucinating randomly**.
+### Hybrid Search & Generation
+- **Semantic Vector Search** - For course-specific content retrieval
+- **External Knowledge Integration** - Google Search for broader context
+- **Content Fusion** - Intelligent merging of internal and external sources
+- **Source Tracking** - Every piece of information traces back to its origin
 
-#### 4.1 Grounding & Reference Checking (for all answers)
+### Quality Control Pipeline
+- **Automatic Validation** - Runs on every generated content
+- **Multi-Dimensional Scoring** - Accuracy, clarity, confidence
+- **Code Execution Testing** - Real runtime validation
+- **Continuous Improvement** - Identifies weaknesses for refinement
 
-- For each generated answer:
-  - Attach **citations** (references to your retrieved chunks).
-  - Display: “Based on: Lecture 3 slides, Lab 2 code `sorting.py`”.
-- Basic **relevance check**:
-  - After generation, run another LLM call:
-    - “Given this answer and these retrieved sources, is the answer consistent and fully grounded? If not, explain issues.”
-  - If not grounded → either:
-    - warn the user (“Some parts may not be fully supported”), or
-    - regenerate with stricter prompt (“Don’t invent; if unsure say you don’t know”).
-
-#### 4.2 Code validation
-
-- **Syntax/lint check**:
-  - For generated code,
-    - Run language-specific syntax check (e.g., `python -m py_compile`, simple `tsc`, `eslint`).
-  - If syntax fails:
-    - Show error + attempt auto‑fix with a mini LLM repair step.
-- **Automated tests (if possible):**
-  - Prepare **a few small unit tests** for lab tasks:
-    - Example: if lab is about “matrix multiplication”, build a test that checks result equality for sample inputs.
-  - When code is generated or uploaded:
-    - Run those tests,
-    - Show pass/fail as part of validation.
-
-#### 4.3 Rubric-based evaluation (for explanations/notes)
-
-- Design a **simple rubric**:
-  - Correctness,
-  - Relevance to course,
-  - Coverage of key points,
-  - Clarity.
-- Have the LLM self‑evaluate answer on this rubric with numeric scores (e.g., 1–5) and short justification.
-- Display to user:
-  - “AI’s own confidence: 4.5/5 correctness; 4/5 coverage.”
-- Judges love this type of **self‑auditing**.
+### All-in-One Workflow
+```
+Upload → Parse → Index → Search → Generate → Validate → Deliver
+```
+Every step is automated with quality checks at each stage.
 
 ---
 
-### Part 5: Conversational Chat Interface
+## 🔧 Technology Stack
 
-**Goal:** One unified chat where:
-- You can search,
-- Summarize,
-- Generate notes,
-- Ask about lab code,
-- All with context & history.
+**Frontend:**
+- Next.js 14+ with TypeScript
+- React with modern hooks
+- Tailwind CSS for styling
+- Shadcn UI components
 
-**Chat backend logic:**
+**Backend:**
+- Node.js + Express/Fastify
+- PostgreSQL for relational data
+- Vector Database for embeddings
+- S3-compatible storage for files
 
-1. Every incoming message:
-   - Classify intent (lightweight heuristic or LLM classification):
-     - “search materials”,
-     - “summarize content”,
-     - “generate notes”,
-     - “help with lab code”.
-2. For each intent:
-   - Use appropriate tools:
-     - Intent “search” → run semantic search, summarize results.
-     - Intent “notes” → call RAG generation as above.
-     - Intent “lab help” → restrict retrieval to `lab` + `code` chunks.
-3. Maintain **conversation memory**:
-   - Store last N turns (e.g., 10) in DB or session.
-   - When answering, include short conversation summary or previous important Q/A in the prompt.
-4. UI:
-   - Left: message bubbles (user vs AI).
-   - Right or bottom:
-     - collapsible “Sources” panel showing:
-       - Titles of materials used,
-       - snippet previews.
+**AI & ML:**
+- LlamaIndex for multimodal parsing
+- OpenAI for embeddings and generation
+- Piston server for code validation
+- Google Search API for external content
+
+**Infrastructure:**
+- Docker & Docker Compose
+- Drizzle ORM for database management
+- RESTful API architecture
 
 ---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 18+
+- PostgreSQL
+- Docker & Docker Compose
+- OpenAI API key
+
+### Quick Start
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd Buet-CSE-FEST-FINAL
+   ```
+
+2. **Setup Backend**
+   ```bash
+   cd server/backend
+   npm install
+   # Configure environment variables
+   docker-compose up -d
+   ```
+
+3. **Setup Frontend**
+   ```bash
+   cd client
+   pnpm install
+   pnpm dev
+   ```
+
+4. **Access the application**
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:8000
+
+For detailed setup instructions, see:
+- [Backend Setup](server/backend/readme.md)
+- [Frontend Setup](client/FRONTEND_SETUP.md)
+- [Docker Setup](server/DOCKER_SETUP.md)
+
+---
+
+## 📚 Documentation
+
+- [API Documentation](server/backend/API_DOCUMENTATION.md)
+- [Database Schema](server/backend/DATABASE_SCHEMA.md)
+- [RAG System Architecture](server/backend/WORKFLOW_PARSER_RAG.md)
+- [Quick Start Guide](ProblemStatement/QUICKSTART_GUIDE.md)
+
+---
+
+## 🎬 Demo Walkthrough
+
+Our demonstration video showcases the complete system in action:
+
+1. **Admin Login & Course Creation** - Creating a new course with all metadata
+2. **Material Upload** - Uploading PDFs, slides, and documents with step-by-step system logs
+3. **RAG Pipeline Visualization** - See how files are processed through both pipelines
+4. **Course Management** - Viewing and organizing uploaded content by Theory/Lab
+5. **Content Generation** - Generating enhanced learning materials with validation scores
+6. **Quality Metrics** - Live display of accuracy, clarity, and confidence scores
+7. **AI Chatbot** - Asking questions and receiving answers with source attribution
+8. **Table Extraction** - Querying data from tables within PDFs with accurate responses
+9. **Lab Content Generation** - Generating complete lab materials with working code
+10. **Student Enrollment** - Student login, course enrollment, and material access
+
+---
+
+## 🌟 Why This Solution Stands Out
+
+### 1. Beyond Traditional RAG
+Most RAG systems treat documents as plain text. We preserve structure, images, tables, and code - maintaining the richness of the original materials.
+
+### 2. Transparency & Trust
+Every answer comes with sources. Every generated content includes validation scores. Students and educators can verify the quality of AI-generated materials.
+
+### 3. Code That Actually Works
+Generated code is validated through actual execution, not just syntax checking. If it passes our validation, it will run.
+
+### 4. Dual Knowledge Sources
+We don't rely solely on course materials. When appropriate, we augment with external knowledge while prioritizing course-specific content.
+
+### 5. Production-Ready Architecture
+Built with scalability in mind - Docker containers, proper database design, modular architecture, and comprehensive error handling.
+
+---
+
+## 📈 Future Enhancements
+
+- Multi-language support for international students
+- Collaborative study groups with shared materials
+- Progress tracking and learning analytics
+- Integration with learning management systems (LMS)
+- Mobile application for on-the-go learning
+- Advanced analytics for educators on content usage
+
+---
+
+## 📄 License
+
+This project was developed for CSE Fest 2025 Hackathon - AI Segment by Team Code Over.
+
+---
+
+## 🙏 Acknowledgments
+
+Special thanks to:
+- CSE Fest organizers for the opportunity
+- OpenAI for powerful language models
+- LlamaIndex team for multimodal parsing capabilities
+- The open-source community for amazing tools and libraries
+
+---
+
+**Made with ❤️ by Team Code Over**
 
