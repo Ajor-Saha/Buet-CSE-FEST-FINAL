@@ -12,6 +12,7 @@
 
 ## 📋 Table of Contents
 
+- [Video Demonstration](#-video-demonstration)
 - [Features](#-features)
 - [System Architecture](#-system-architecture)
 - [Tech Stack](#-tech-stack)
@@ -24,6 +25,12 @@
 - [Project Structure](#-project-structure)
 - [Contributing](#-contributing)
 - [License](#-license)
+
+---
+
+## 🎥 Video Demonstration
+
+[![Watch the video demonstration](https://img.youtube.com/vi/GPdAra2zaCQ/maxresdefault.jpg)](https://youtu.be/GPdAra2zaCQ?si=CGMeATN4z4x_skHg)
 
 ---
 
